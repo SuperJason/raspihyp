@@ -27,10 +27,13 @@ else
 	LOG_LEVEL	:=	20
 endif
 
-SRC_DIR    := .
-BUILD_DIR  := ./out
+ROOT_DIR	:= $(PWD)
+SRC_DIR		:= $(ROOT_DIR)/src
+OUT_DIR		:= $(ROOT_DIR)/out
+PLAT_DIR	:= $(ROOT_DIR)/platform
 
-INCLUDES		+=      -I$(SRC_DIR)/include
+INCLUDES		+=      -I$(ROOT_DIR)/include
+
 #DEFINES			+=
 
 ASFLAGS			+= 	-nostdinc -ffreestanding -Wa,--fatal-warnings	\
@@ -47,7 +50,7 @@ CFLAGS			+=	-ffunction-sections -fdata-sections		\
 LDFLAGS			+=	--fatal-warnings -O1
 LDFLAGS			+=	--gc-sections
 
-CROSS_COMPILE           :=      ../toolchains/aarch64/bin/aarch64-linux-gnu-
+CROSS_COMPILE           :=      $(ROOT_DIR)/../toolchains/aarch64/bin/aarch64-linux-gnu-
 
 CC			:=	${CROSS_COMPILE}gcc
 CPP			:=	${CROSS_COMPILE}cpp
@@ -68,7 +71,7 @@ $(eval PREREQUISITES := $(patsubst %.o,%.d,$(OBJ)))
 
 $(OBJ) : $(2)
 	@echo "  CC      $$<"
-	$$(Q)$$(CC) $$(CFLAGS
+	$$(Q)$$(CC) $$(CFLAGS) -DIMAGE_BL$(3) -c $$< -o $$@
 
 
 $(PREREQUISITES) : $(2)
@@ -133,35 +136,38 @@ define SOURCES_TO_OBJS
 	$(notdir $(patsubst %.S,%.o,$(filter %.S,$(1))))
 endef
 
-SOURCES    := $(SRC_DIR)/raspihyp.S
-LINKERFILE := $(SRC_DIR)/raspihyp.ld
-
-OBJS       := $(addprefix $(BUILD_DIR)/,$(call SOURCES_TO_OBJS,$(SOURCES)))
-ELF        := $(BUILD_DIR)/raspihyp.elf
-
 .PHONY: raspihyp clean help
 all: raspihyp
 
-$(eval $(call MAKE_OBJS,$(BUILD_DIR),$(SOURCES)))
-$(eval $(call MAKE_LD,$(LINKERFILE),$(LINKERFILE).S))
+SOURCES		:= 	$(PLAT_DIR)/raspihyp.S		\
+			$(SRC_DIR)/hyp_main.c
+LINKERFILE	:= $(OUT_DIR)/raspihyp.ld
+LINKERFILE_SRC	:= $(PLAT_DIR)/raspihyp.ld.S
+MAPFILE		:= $(OUT_DIR)/raspihyp.map
+
+$(eval $(call MAKE_OBJS,$(OUT_DIR),$(SOURCES)))
+$(eval $(call MAKE_LD,$(LINKERFILE),$(LINKERFILE_SRC)))
+
+OBJS       := $(addprefix $(OUT_DIR)/,$(call SOURCES_TO_OBJS,$(SOURCES)))
+ELF        := $(OUT_DIR)/raspihyp.elf
 
 $(ELF) : $(OBJS) $(LINKERFILE)
 	@echo "  LD      $@"
 	@echo 'const char build_message[] = "Built : "__TIME__", "__DATE__; \
 	       const char version_string[] = "${VERSION_STRING}";' | \
-		$(CC) $(CFLAGS) -xc - -o $(BUILD_DIR)/build_message.o
+		$(CC) $(CFLAGS) -xc - -o $(OUT_DIR)/build_message.o
 	$(Q)$(LD) -o $@ $(LDFLAGS) -Map=$(MAPFILE) --script $(LINKERFILE) \
-					$(BUILD_DIR)/build_message.o $(OBJS)
+					$(OUT_DIR)/build_message.o $(OBJS)
 
-$(BUILD_DIR) :
+$(OUT_DIR) :
 	$(Q)mkdir -p "$@"
 
 
-raspihyp: $(BUILD_DIR) $(ELF)
+raspihyp: $(OUT_DIR) $(ELF)
 
 clean:
 	@echo "  CLEAN"
-	${Q}rm -rf ${BUILD_DIR}
+	${Q}rm -rf ${OUT_DIR}
 
 help:
 	@echo "usage: ${MAKE} PLAT=<${HELP_PLATFORMS}> <all|clean>"
