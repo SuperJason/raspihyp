@@ -1,4 +1,4 @@
-/*
+/* 
  * Copyright (c) 2017, HongluoStuido.com. All rights reserved.
  */
 
@@ -22,23 +22,21 @@ __uboot_data:
 	.quad 0
 	.quad 0
 __skipspin:
-	/* ---------------------------------------------
-	 * Set the CPU endianness before doing anything
-	 * that might involve memory reads or writes.
-	 * ---------------------------------------------
-	 */
-	mrs	x0, sctlr_el3
-	bic	x0, x0, #SCTLR_EE_BIT
-	msr	sctlr_el3, x0
-	isb
+	bl	el2_setup
 
-	/* ---------------------------------------------
-	 * Jump to main function.
-	 * ---------------------------------------------
-	 */
+	/* Jump to main function. */
 	bl	hyp_main
 
 	b	hyp_exit
+
+	/* -----------------------------------------------------
+	 * Make sure we boot at EL2, otherwise passby.
+	 * -----------------------------------------------------
+	 */
+el2_setup:
+	mrs     x0, CurrentEL
+	cmp     x0, #ID_AA64PFR0_EL2_SHIFT
+	ret
 
 hyp_exit:
 	eret

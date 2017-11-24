@@ -52,4 +52,7 @@
 
 void hyp_printf(const char *fmt, ...);
 
+void /*__dead2*/ do_panic(void); /* TODO */
+#define panic()	do_panic()
+
 #endif /* __DEBUG_H__ */

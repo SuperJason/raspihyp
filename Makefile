@@ -7,24 +7,24 @@ VERSION_MINOR		:= 1
 # Build verbosity
 V			:= 1
 # Debug build
-DEBUG			:= 0
+DEBUG			:= 1
 # Build architecture
 ARCH 			:= aarch64
 
 ifeq (${V},0)
-	Q=@
-	CHECKCODE_ARGS	+=	--no-summary --terse
+Q=@
+CHECKCODE_ARGS	+=	--no-summary --terse
 else
-	Q=
+Q=
 endif
 export Q
 
 ifneq (${DEBUG}, 0)
-	BUILD_TYPE	:=	debug
-	LOG_LEVEL	:=	40
+BUILD_TYPE	:=	debug
+LOG_LEVEL	:=	40
 else
-	BUILD_TYPE	:=	release
-	LOG_LEVEL	:=	20
+BUILD_TYPE	:=	release
+LOG_LEVEL	:=	20
 endif
 
 ROOT_DIR	:= $(PWD)
@@ -32,7 +32,10 @@ SRC_DIR		:= $(ROOT_DIR)/src
 OUT_DIR		:= $(ROOT_DIR)/out
 PLAT_DIR	:= $(ROOT_DIR)/platform
 
-INCLUDES		+=      -I$(ROOT_DIR)/include
+INCLUDES		+=      -I$(ROOT_DIR)/include/stdlib		\
+				-I$(ROOT_DIR)/include/stdlib/sys	\
+				-I$(ROOT_DIR)/include/drivers		\
+				-I$(ROOT_DIR)/include
 
 #DEFINES			+=
 
@@ -140,6 +143,8 @@ endef
 all: raspihyp
 
 SOURCES		:= 	$(PLAT_DIR)/raspihyp.S		\
+			$(ROOT_DIR)/lib/stdlib/std.c	\
+			$(SRC_DIR)/hyp_printf.c		\
 			$(SRC_DIR)/hyp_main.c
 LINKERFILE	:= $(OUT_DIR)/raspihyp.ld
 LINKERFILE_SRC	:= $(PLAT_DIR)/raspihyp.ld.S
