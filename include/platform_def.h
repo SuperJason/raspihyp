@@ -30,7 +30,7 @@
 #define BL31_BASE			(DRAM_NS_BASE + DRAM_NS_SIZE)	   /* BL31 load address */
 #define BL31_LIMIT			(BL31_BASE + 0x40000)
 
-#define HYP_BASE			(BL31_LIMIT)
+#define HYP_BASE			(0x06000000)
 #define HYP_LIMIT			(HYP_BASE + 0x80000) /* HYP 512K */
 
 #endif /* __PLATFORM_DEF_H__ */
