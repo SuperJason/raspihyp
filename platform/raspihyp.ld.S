@@ -20,7 +20,7 @@ SECTIONS
 
     ro . : {
         __RO_START__ = .;
-        *hyp_entrypoint.o(.text*)
+        *raspihyp.o(.text*)
         *(.text*)
         *(.rodata*)
 

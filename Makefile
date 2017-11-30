@@ -148,13 +148,15 @@ SOURCES		:= 	$(PLAT_DIR)/raspihyp.S		\
 			$(SRC_DIR)/hyp_main.c
 LINKERFILE	:= $(OUT_DIR)/raspihyp.ld
 LINKERFILE_SRC	:= $(PLAT_DIR)/raspihyp.ld.S
-MAPFILE		:= $(OUT_DIR)/raspihyp.map
 
 $(eval $(call MAKE_OBJS,$(OUT_DIR),$(SOURCES)))
 $(eval $(call MAKE_LD,$(LINKERFILE),$(LINKERFILE_SRC)))
 
-OBJS       := $(addprefix $(OUT_DIR)/,$(call SOURCES_TO_OBJS,$(SOURCES)))
-ELF        := $(OUT_DIR)/raspihyp.elf
+OBJS    := $(addprefix $(OUT_DIR)/,$(call SOURCES_TO_OBJS,$(SOURCES)))
+MAPFILE	:= $(OUT_DIR)/raspihyp.map
+DUMP    := $(OUT_DIR)/raspihyp.dump
+BIN     := $(OUT_DIR)/raspihyp.bin
+ELF     := $(OUT_DIR)/raspihyp.elf
 
 $(ELF) : $(OBJS) $(LINKERFILE)
 	@echo "  LD      $@"
@@ -164,11 +166,22 @@ $(ELF) : $(OBJS) $(LINKERFILE)
 	$(Q)$(LD) -o $@ $(LDFLAGS) -Map=$(MAPFILE) --script $(LINKERFILE) \
 					$(OUT_DIR)/build_message.o $(OBJS)
 
+$(DUMP) : $(ELF)
+	@echo "  OD      $@"
+	${Q}${OD} -dx $< > $@
+
+$(BIN) : $(ELF)
+	@echo "  BIN     $@"
+	$(Q)$(OC) -O binary $< $@
+	@echo
+	@echo "Built $@ successfully"
+	@echo
+
 $(OUT_DIR) :
 	$(Q)mkdir -p "$@"
 
 
-raspihyp: $(OUT_DIR) $(ELF)
+raspihyp: $(OUT_DIR) $(BIN) $(DUMP)
 
 clean:
 	@echo "  CLEAN"
