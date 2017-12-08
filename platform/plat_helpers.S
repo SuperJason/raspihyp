@@ -18,7 +18,6 @@
 func plat_crash_console_init
 	mov x0, #1
 	ret
-	b dummy_console_init
 
 	/* ---------------------------------------------
 	 * int plat_crash_console_putc(int c)
@@ -57,7 +56,7 @@ func plat_crash_console_putc
 	b	_console_putc
 
 hyp_msg:
-	.asciz "hyp message\n"
+	.asciz "\n### Hypervisor Message ###\n"
 	
 func plat_report_hypmsg
 	mov	x9, x30
