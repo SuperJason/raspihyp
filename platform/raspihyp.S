@@ -22,6 +22,7 @@ __uboot_data:
 	.quad 0
 	.quad 0
 __skipspin:
+	bl	plat_report_hypmsg
 	bl	el2_setup
 
 	/* Jump to main function. */
