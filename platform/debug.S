@@ -10,6 +10,8 @@
 	.globl	asm_assert
 	.globl	do_panic
 	.globl  do_debug_report
+	.globl  dbg_print
+	.globl  dbg_print_sp
 
 /* Since the max decimal input number is 65536 */
 #define MAX_DEC_DIVISOR		10000
@@ -155,11 +157,33 @@ _panic_loop:
 	b	_panic_loop
 
 dbg_msg:
-	.asciz "\n### Debug Message ###\n"
+	.asciz "\n### Debug Message 0 ###\n"
 
 func do_debug_report
 	mov	x9, x30
 	adr	x4, dbg_msg
 	bl	asm_print_str
-	/* Print the el2 sys registers */
 	ret	x9
+
+dbg_print_start:
+	.asciz "\n## Debug val = "
+
+dbg_print_end:
+	.asciz " ##\n"
+
+func dbg_print
+	mov	x10, x30
+	mov	x6, x0
+	adr	x4, dbg_print_start
+	bl	asm_print_str
+	mov	x4, x6
+	bl	asm_print_hex
+	adr	x4, dbg_print_end
+	bl	asm_print_str
+	ret	x10
+
+func dbg_print_sp
+	mov	x11, x30
+	mov	x0, sp
+	bl	dbg_print
+	ret	x11

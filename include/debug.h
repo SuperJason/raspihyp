@@ -14,6 +14,10 @@
 #define LOG_LEVEL_VERBOSE		60
 
 
+#ifndef LOG_LEVEL
+#define LOG_LEVEL LOG_LEVEL_INFO
+#endif
+
 #if LOG_LEVEL >= LOG_LEVEL_NOTICE
 #define pr_notice(...)	hyp_printf("NOTICE:  " __VA_ARGS__)
 #else
@@ -54,5 +58,8 @@ void hyp_printf(const char *fmt, ...);
 
 void /*__dead2*/ do_panic(void); /* TODO */
 #define panic()	do_panic()
+
+void dbg_print(long num);
+void dbg_print_sp(void);
 
 #endif /* __DEBUG_H__ */

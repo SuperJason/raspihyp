@@ -33,4 +33,10 @@
 #define HYP_BASE			(0x06000000)
 #define HYP_LIMIT			(HYP_BASE + 0x80000) /* HYP 512K */
 
+/*******************************************************************************
+ * Generic platform constants
+ ******************************************************************************/
+/* Size of cacheable stacks */
+#define PLATFORM_STACK_SIZE		0x800
+
 #endif /* __PLATFORM_DEF_H__ */

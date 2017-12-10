@@ -35,6 +35,12 @@ SECTIONS
         __RO_END__ = .;
     } >RAM
 
+    stacks (NOLOAD) : {
+        __STACKS_START__ = .;
+        *(hyp_normal_stacks)
+        __STACKS_END__ = .;
+    } >RAM
+
     .data . : {
         __DATA_START__ = .;
         *(.data*)
