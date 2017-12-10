@@ -164,7 +164,7 @@ ELF     := $(OUT_DIR)/raspihyp.elf
 
 $(ELF) : $(OBJS) $(LINKERFILE)
 	@echo "  LD      $@"
-	@echo 'const char build_message[] = "Built : "__TIME__", "__DATE__; \
+	@echo 'const char build_message[] = "Built: "__TIME__", "__DATE__; \
 	       const char version_string[] = "${VERSION_STRING}";' | \
 		$(CC) $(CFLAGS) -xc - -o $(OUT_DIR)/build_message.o
 	$(Q)$(LD) -o $@ $(LDFLAGS) -Map=$(MAPFILE) --script $(LINKERFILE) \
