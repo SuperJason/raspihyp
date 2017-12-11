@@ -159,6 +159,7 @@ _panic_loop:
 dbg_msg:
 	.asciz "\n### Debug Message 0 ###\n"
 
+	.align 8
 func do_debug_report
 	mov	x9, x30
 	adr	x4, dbg_msg
@@ -171,6 +172,7 @@ dbg_print_start:
 dbg_print_end:
 	.asciz " ##\n"
 
+	.align 8
 func dbg_print
 	mov	x10, x30
 	mov	x6, x0

@@ -58,6 +58,7 @@ func plat_crash_console_putc
 hyp_msg:
 	.asciz "\n### Hypervisor Message from ASM ###\n"
 	
+	.align 8
 func plat_report_hypmsg
 	mov	x9, x30
 	adr	x3, hyp_msg

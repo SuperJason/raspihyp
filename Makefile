@@ -67,6 +67,24 @@ PP			:=	${CROSS_COMPILE}gcc -E ${CFLAGS}
 
 VERSION_STRING		:=	v${VERSION_MAJOR}.${VERSION_MINOR}
 
+# Convenience function for adding build definitions
+# $(eval $(call add_define,FOO)) will have:
+# -DFOO if $(FOO) is empty; -DFOO=$(FOO) otherwise
+define add_define
+DEFINES			+=	-D$(1)$(if $(value $(1)),=$(value $(1)),)
+endef
+
+$(eval $(call add_define,DEBUG))
+ifeq (${DEBUG},0)
+  $(eval $(call add_define,NDEBUG))
+else
+CFLAGS			+=	-g
+ASFLAGS			+=	-g -Wa,--gdwarf-2
+endif
+
+# Process LOG_LEVEL flag
+$(eval $(call add_define,LOG_LEVEL))
+
 define MAKE_C
 
 $(eval OBJ := $(1)/$(patsubst %.c,%.o,$(notdir $(2))))
