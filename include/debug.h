@@ -42,7 +42,7 @@
 # define pr_info(...)
 #endif
 
-#if LOG_LEVEL >= LOG_LEVEL_VERBOSE
+#if LOG_LEVEL >= LOG_LEVEL_DEBUG
 # define pr_debug(...)	hyp_printf("DEBUG:   " __VA_ARGS__)
 #else
 # define pr_debug(...)
