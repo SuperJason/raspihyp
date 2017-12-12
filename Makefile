@@ -21,7 +21,7 @@ export Q
 
 ifneq (${DEBUG}, 0)
 BUILD_TYPE	:=	debug
-LOG_LEVEL	:=	40
+LOG_LEVEL	:=	50
 else
 BUILD_TYPE	:=	release
 LOG_LEVEL	:=	20
@@ -165,6 +165,7 @@ SOURCES		:= 	$(PLAT_DIR)/raspihyp.S		\
 			$(PLAT_DIR)/plat_helpers.S	\
 			$(PLAT_DIR)/platform_up_stack.S	\
 			$(PLAT_DIR)/console.c		\
+			$(PLAT_DIR)/plat_debug.c	\
 			$(ROOT_DIR)/lib/stdlib/std.c	\
 			$(SRC_DIR)/hyp_printf.c		\
 			$(SRC_DIR)/hyp_main.c

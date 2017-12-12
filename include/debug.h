@@ -62,4 +62,6 @@ void /*__dead2*/ do_panic(void); /* TODO */
 void dbg_print(long num);
 void dbg_print_sp(void);
 
+void print_sys_regs(void);
+
 #endif /* __DEBUG_H__ */

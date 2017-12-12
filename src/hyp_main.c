@@ -14,6 +14,7 @@ void hyp_main(void)
 	dbg_print_sp();
 	pr_notice("This is a hypervisor for Raspiberry Pi 3!\n");
 	pr_notice("%s, %s\n", version_string, build_message);
+	print_sys_regs();
 	a = 0;
 	b = 0;
 
