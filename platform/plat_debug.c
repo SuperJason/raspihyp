@@ -56,15 +56,15 @@ void print_sys_regs(void)
 	PRINT_SYSREG(amair_el1);
 	PRINT_SYSREG(amair_el2);
 
-	/*
+	/* if el3 implemented, these regs are not implemented
+	 * Reset Vector Base Address Register
 	PRINT_SYSREG(rvbar_el1);
 	PRINT_SYSREG(rvbar_el2);
-	*/
 
-	/*
+	 * Reset Management Register
 	PRINT_SYSREG(rmr_el1);
-	*/
 	PRINT_SYSREG(rmr_el2);
+	*/
 
 	PRINT_SYSREG(tcr_el1);
 	PRINT_SYSREG(tcr_el2);
