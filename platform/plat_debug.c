@@ -14,12 +14,21 @@ void print_sys_regs(void)
 	PRINT_SYSREG(spsr_el1);
 	PRINT_SYSREG(spsr_el2);
 
+	PRINT_SYSREG(spsr_abt);
+	PRINT_SYSREG(spsr_und);
+	PRINT_SYSREG(spsr_fiq);
+	PRINT_SYSREG(spsr_irq);
+
 	PRINT_SYSREG(elr_el1);
 	PRINT_SYSREG(elr_el2);
 
 	PRINT_SYSREG(midr_el1);
 	PRINT_SYSREG(mpidr_el1);
+
 	PRINT_SYSREG(hcr_el2);
+	PRINT_SYSREG(hacr_el2);
+	PRINT_SYSREG(hpfar_el2);
+	PRINT_SYSREG(hstr_el2);
 
 	PRINT_SYSREG(vbar_el1);
 	PRINT_SYSREG(vbar_el2);
@@ -50,10 +59,12 @@ void print_sys_regs(void)
 	/*
 	PRINT_SYSREG(rvbar_el1);
 	PRINT_SYSREG(rvbar_el2);
-
-	PRINT_SYSREG(rmr_el1);
-	PRINT_SYSREG(rmr_el2);
 	*/
+
+	/*
+	PRINT_SYSREG(rmr_el1);
+	*/
+	PRINT_SYSREG(rmr_el2);
 
 	PRINT_SYSREG(tcr_el1);
 	PRINT_SYSREG(tcr_el2);
@@ -81,6 +92,10 @@ void print_sys_regs(void)
 	PRINT_SYSREG(vmpidr_el2);
 
 	PRINT_SYSREG(isr_el1);
+
+	PRINT_SYSREG(sp_el0);
+	PRINT_SYSREG(sp_el1);
+	PRINT_SYSREG(spsel);
 
 	/* GICv3 System Registers */
 	/*
