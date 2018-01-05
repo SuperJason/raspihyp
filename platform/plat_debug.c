@@ -7,6 +7,7 @@ void print_sys_regs(void)
 {
 	pr_debug("Here is system regisers:\n");
 	pr_debug("CurrentEl\t= 0x%lx\n", read_CurrentEl());
+
 	PRINT_SYSREG(id_pfr1_el1);
 	PRINT_SYSREG(id_aa64pfr0_el1);
 	PRINT_SYSREG(daif);
@@ -103,4 +104,35 @@ void print_sys_regs(void)
 	PRINT_SYSREG(icc_sre_el2);
 	PRINT_SYSREG(icc_pmr_el1);
 	*/
+
+	pr_debug("System regisers relevant to MMU:\n");
+
+	/* DDI0487B_a_armv8_arm, Table D4-4 */
+	PRINT_SYSREG(hcr_el2);
+	PRINT_SYSREG(sctlr_el1);
+	PRINT_SYSREG(sctlr_el2);
+	/* sctlr_el3 */
+	PRINT_SYSREG(tcr_el1);
+	PRINT_SYSREG(tcr_el2);
+	PRINT_SYSREG(vtcr_el2);
+	/* tcr_el3 */
+	PRINT_SYSREG(ttbr0_el1);
+	PRINT_SYSREG(ttbr1_el1);
+	PRINT_SYSREG(ttbr0_el2);
+	PRINT_SYSREG(vttbr_el2);
+	/* ttbr0_el3 */
+
+	PRINT_SYSREG(id_aa64mmfr0_el1);
+	PRINT_SYSREG(id_aa64mmfr1_el1);
+	PRINT_SYSREG(hcr_el2);
+	PRINT_SYSREG(mair_el1);
+	PRINT_SYSREG(mair_el2);
+	PRINT_SYSREG(amair_el1);
+	PRINT_SYSREG(amair_el2);
+	PRINT_SYSREG(contextidr_el1);
+	PRINT_SYSREG(par_el1);
+	PRINT_SYSREG(esr_el1);
+	PRINT_SYSREG(esr_el2);
+	PRINT_SYSREG(hpfar_el2);
+	PRINT_SYSREG(far_el2);
 }
