@@ -94,7 +94,7 @@ void print_sys_regs(void)
 
 	PRINT_SYSREG(isr_el1);
 
-	PRINT_SYSREG(sp_el0);
+	/* PRINT_SYSREG(sp_el0); */
 	PRINT_SYSREG(sp_el1);
 	PRINT_SYSREG(spsel);
 
