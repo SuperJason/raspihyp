@@ -2,15 +2,46 @@
  * Copyright (c) 2017, HongluoStuido.com. All rights reserved.
  */
 
+#include <arch_helpers.h>
 #include <debug.h>
 extern const char build_message[];
 extern const char version_string[];
 
+/**
+ * struct arm_smccc_res - Result from SMC/HVC call
+ * @a0-a3 result values from registers 0 to 3
+ */
+struct arm_smccc_res {
+	unsigned long a0;
+	unsigned long a1;
+	unsigned long a2;
+	unsigned long a3;
+};
+
+/**
+ * arm_smccc_smc() - make SMC calls
+ * @a0-a7: arguments passed in registers 0 to 7
+ * @res: result values from registers 0 to 3
+ *
+ * This function is used to make SMC calls following SMC Calling Convention.
+ * The content of the supplied param are copied to registers 0 to 7 prior
+ * to the SMC instruction. The return values are updated with the content
+ * from register 0 to 3 on return from the SMC instruction.
+ */
+void arm_smccc_smc(unsigned long a0, unsigned long a1,
+			unsigned long a2, unsigned long a3, unsigned long a4,
+			unsigned long a5, unsigned long a6, unsigned long a7,
+			struct arm_smccc_res *res);
+
+void cpu_test(int cpu_id);
+void cpu_test_fn(void);
 void mmu_test(void);
+struct arm_smccc_res cpu_res;
+void hyp_entrypoint(void);
 
 void hyp_main(void)
 {
-	int a, b, c;
+	unsigned long cpu_id;
 
 	dbg_print(0x10);
 	dbg_print_sp();
@@ -20,21 +51,31 @@ void hyp_main(void)
 	pr_notice("After print_sys_regs\n");
 
 	mmu_test();
+	cpu_test_fn();
 
-	a = 0;
-	b = 0;
+	cpu_id = (read_mpidr_el1() & 0xff00ffffff) + 1;
+	cpu_test(cpu_id);
+}
 
-	a++;
-	b++;
+void cpu_test(int cpu_id)
+{
+	arm_smccc_smc(0x84000000, 0, 0, 0, 0, 0, 0, 0, &cpu_res);
+	pr_debug("res.a0 = 0x%x\n", cpu_res.a0);
+	pr_debug("Start Next CPU %d\n", cpu_id);
+	arm_smccc_smc(0xc4000003, cpu_id, (unsigned long)hyp_entrypoint, 0, 0, 0, 0, 0, &cpu_res);
+	pr_debug("res a0 = %d, a1 = %d, a2 = %d, a3 = %d\n", cpu_res.a0, cpu_res.a1, cpu_res.a2, cpu_res.a3);
+}
 
-	c = a + b;
-
-	c++;
-
+void cpu_test_fn(void)
+{
+	pr_debug("-----Here is cpu bringup-----\n");
+	pr_debug("midr_el1 = 0x%x\n", read_midr_el1());
+	pr_debug("mpidr_el1 = 0x%x\n", read_mpidr_el1());
 }
 
 void mmu_test(void)
 {
+	/*
 	unsigned int *p;
 	unsigned long long i;
 
@@ -58,4 +99,5 @@ void mmu_test(void)
 		pr_debug("HYP: Try to read addr: 0x%llx -- *p:0x%x\n", (unsigned long long)p, *p);
 
 	}
+	*/
 }

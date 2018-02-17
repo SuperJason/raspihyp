@@ -1,13 +1,14 @@
-/* 
+/*
  * Copyright (c) 2017, HongluoStuido.com. All rights reserved.
  */
 
 #include <arch.h>
 #include <asm_macros.S>
 
-	.globl	hyp_entrypoint
+	.globl hyp_entrypoint
 	.globl __uboot_data
 	.globl hyp_exit
+	.globl arm_smccc_smc
 
 	/* -----------------------------------------------------
 	 * hyp_entrypoint() is the cold boot entrypoint,
@@ -61,3 +62,14 @@ el2_setup:
 hyp_exit:
 	eret
 
+	/*
+	 * linux/arch/arm64/kernel/smccc-call.S
+	 */
+arm_smccc_smc:
+	.cfi_startproc
+	smc	#0
+	ldr	x4, [sp]
+	stp	x0, x1, [x4, #0]
+	stp	x2, x3, [x4, #16]
+	ret
+        .cfi_endproc
