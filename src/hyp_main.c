@@ -49,7 +49,7 @@ void hyp_main(void)
 
 	mmu_test();
 
-	cpu_test(cpu_id);
+	cpu_test();
 }
 
 void cpu_test(void)
@@ -61,7 +61,6 @@ void cpu_test(void)
 	pr_debug("mpidr_el1 = 0x%x\n", read_mpidr_el1());
 
 	cpu_id = (read_mpidr_el1() & 0xff00ffffff) + 1;
-	cpu_test(cpu_id);
 
 	arm_smccc_smc(0x84000000, 0, 0, 0, 0, 0, 0, 0, &cpu_res);
 	pr_debug("res.a0 = 0x%x\n", cpu_res.a0);
