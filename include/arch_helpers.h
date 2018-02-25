@@ -141,8 +141,8 @@ void inv_dcache_range(uint64_t, uint64_t);
 void dcsw_op_louis(uint32_t);
 void dcsw_op_all(uint32_t);
 
-void disable_mmu_el3(void);
-void disable_mmu_icache_el3(void);
+void disable_mmu_el2(void);
+void disable_mmu_icache_el2(void);
 
 /*******************************************************************************
  * Misc. accessor prototypes
@@ -277,6 +277,8 @@ DEFINE_SYSREG_RW_FUNCS(cnthctl_el2)
 DEFINE_SYSREG_RW_FUNCS(contextidr_el1)
 DEFINE_SYSREG_RW_FUNCS(contextidr_el2)
 
+DEFINE_SYSREG_RW_FUNCS(tpidr_el1)
+DEFINE_SYSREG_RW_FUNCS(tpidr_el2)
 DEFINE_SYSREG_RW_FUNCS(tpidr_el3)
 
 DEFINE_SYSREG_RW_FUNCS(cntvoff_el2)
@@ -319,8 +321,11 @@ DEFINE_RENAME_SYSREG_RW_FUNCS(icc_pmr_el1, ICC_PMR_EL1)
 
 #define read_mpidr()		read_mpidr_el1()
 
-#define read_scr()		read_scr_el3()
-#define write_scr(_v)		write_scr_el3(_v)
+#define read_scr()		read_scr_el2()
+#define write_scr(_v)		write_scr_el2(_v)
+
+#define read_hcr()		read_hcr_el2()
+#define write_hcr(_v)		write_hcr_el2(_v)
 
 #define read_hcr()		read_hcr_el2()
 #define write_hcr(_v)		write_hcr_el2(_v)

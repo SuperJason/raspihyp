@@ -39,4 +39,21 @@
 /* Size of cacheable stacks */
 #define PLATFORM_STACK_SIZE		0x800
 
+#define PLATFORM_CLUSTER_COUNT          1                                        
+#define PLATFORM_CORE_COUNT             4 
+
+#define HYP_VCPU_COUNT	4
+
+/*******************************************************************************
+ * Declarations and constants to access the mailboxes safely. Each mailbox is
+ * aligned on the biggest cache line size in the platform. This is known only
+ * to the platform as it might have a combination of integrated and external
+ * caches. Such alignment ensures that two maiboxes do not sit on the same cache
+ * line at any cache level. They could belong to different cpus/clusters &
+ * get written while being protected by different locks causing corruption of
+ * a valid mailbox address.
+ ******************************************************************************/
+#define CACHE_WRITEBACK_SHIFT   6
+#define CACHE_WRITEBACK_GRANULE (1 << CACHE_WRITEBACK_SHIFT)
+
 #endif /* __PLATFORM_DEF_H__ */

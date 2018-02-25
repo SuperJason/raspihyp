@@ -4,6 +4,8 @@
 
 #include <arch_helpers.h>
 #include <debug.h>
+#include <hyp.h>
+
 extern const char build_message[];
 extern const char version_string[];
 
@@ -38,8 +40,16 @@ void mmu_test(void);
 struct arm_smccc_res cpu_res;
 void hyp_entrypoint(void);
 
+void hyp_init(void);
+void hyp_enable(void);
+
+entry_point_info_t entry_point_info;
+
 void hyp_main(void)
 {
+	entry_point_info_t *ep = &entry_point_info;
+	uint64_t mpidr;
+
 	dbg_print(0x10);
 	dbg_print_sp();
 	pr_notice("This is a hypervisor for Raspiberry Pi 3!\n");
@@ -50,6 +60,19 @@ void hyp_main(void)
 	mmu_test();
 
 	cpu_test();
+
+	mm_init();
+
+	mpidr = read_mpidr();
+	ep->spsr = 0x3c9;
+	ep->pc = 0x10000000;
+
+	cpu_data_init(mpidr);
+	init_context(mpidr, ep);
+	vm_init();
+	hyp_init();
+	hyp_enable();
+	vm_boot();
 }
 
 void cpu_test(void)
@@ -96,4 +119,12 @@ void mmu_test(void)
 
 	}
 	*/
+}
+
+void hyp_init(void)
+{
+}
+
+void hyp_enable(void)
+{
 }
