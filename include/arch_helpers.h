@@ -327,9 +327,6 @@ DEFINE_RENAME_SYSREG_RW_FUNCS(icc_pmr_el1, ICC_PMR_EL1)
 #define read_hcr()		read_hcr_el2()
 #define write_hcr(_v)		write_hcr_el2(_v)
 
-#define read_hcr()		read_hcr_el2()
-#define write_hcr(_v)		write_hcr_el2(_v)
-
 #define read_cpacr()		read_cpacr_el1()
 #define write_cpacr(_v)		write_cpacr_el1(_v)
 

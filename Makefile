@@ -160,17 +160,22 @@ endef
 .PHONY: raspihyp clean help
 all: raspihyp
 
-SOURCES		:= 	$(PLAT_DIR)/raspihyp.S		\
-			$(PLAT_DIR)/debug.S		\
-			$(PLAT_DIR)/plat_helpers.S	\
-			$(PLAT_DIR)/platform_up_stack.S	\
-			$(PLAT_DIR)/console.c		\
-			$(PLAT_DIR)/plat_debug.c	\
-			$(ROOT_DIR)/lib/stdlib/std.c	\
-			$(SRC_DIR)/mm.c			\
-			$(SRC_DIR)/vm.c			\
-			$(SRC_DIR)/context.c		\
-			$(SRC_DIR)/hyp_printf.c		\
+SOURCES		:= 	$(PLAT_DIR)/raspihyp.S				\
+			$(PLAT_DIR)/debug.S				\
+			$(PLAT_DIR)/plat_helpers.S			\
+			$(PLAT_DIR)/platform_up_stack.S			\
+			$(PLAT_DIR)/console.c				\
+			$(PLAT_DIR)/plat_debug.c			\
+			$(PLAT_DIR)/interrupt.c				\
+			$(PLAT_DIR)/aarch64/cache_helpers.S		\
+			$(PLAT_DIR)/aarch64/crash_reporting.S		\
+			$(PLAT_DIR)/aarch64/misc_helpers.S		\
+			$(PLAT_DIR)/aarch64/runtime_exceptions.S	\
+			$(ROOT_DIR)/lib/stdlib/std.c			\
+			$(SRC_DIR)/mm.c					\
+			$(SRC_DIR)/vm.c					\
+			$(SRC_DIR)/context.c				\
+			$(SRC_DIR)/hyp_printf.c				\
 			$(SRC_DIR)/hyp_main.c
 LINKERFILE	:= $(OUT_DIR)/raspihyp.ld
 LINKERFILE_SRC	:= $(PLAT_DIR)/raspihyp.ld.S

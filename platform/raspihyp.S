@@ -23,8 +23,59 @@ __uboot_data:
 	.quad 0
 	.quad 0
 __skipspin:
+	/* ---------------------------------------------
+	 * Set the CPU endianness before doing anything
+	 * that might involve memory reads or writes.
+	 * ---------------------------------------------
+	 */
+	mrs	x0, sctlr_el2
+	bic	x0, x0, #SCTLR_EE_BIT
+	msr	sctlr_el2, x0
+	isb
+
+	/* ---------------------------------------------
+	 * Show something at the beginning
+	 * ---------------------------------------------
+	 */
 	bl	plat_report_hypmsg
-	bl	el2_setup
+
+
+	/* ---------------------------------------------
+	 * Check EL
+	 * ---------------------------------------------
+	 */
+	bl	el2_check
+
+	/* ---------------------------------------------
+	 * Set the exception vector.
+	 * ---------------------------------------------
+	 */
+	adr     x1, runtime_exceptions
+	msr     vbar_el2, x1
+	isb
+
+	/* ---------------------------------------------
+	 * Enable the SError interrupt now that the
+	 * exception vectors have been setup.
+	 * ---------------------------------------------
+	 */
+	msr	daifclr, #DAIF_ABT_BIT
+
+	/* ---------------------------------------------
+	 * Zero out NOBITS sections. There are 2 of them:
+	 *   - the .bss section;
+	 *   - the coherent memory section.
+	 * ---------------------------------------------
+	 */
+	ldr	x0, =__BSS_START__
+	ldr	x1, =__BSS_SIZE__
+	bl	zeromem16
+
+#if USE_COHERENT_MEM
+	ldr	x0, =__COHERENT_RAM_START__
+	ldr	x1, =__COHERENT_RAM_UNALIGNED_SIZE__
+	bl	zeromem16
+#endif
 
 	/* ---------------------------------------------
 	 * Use SP_EL0 for the C runtime stack.
@@ -32,29 +83,27 @@ __skipspin:
 	 */
 	msr	spsel, #0
 
-	/* Jason Debug */
-	mov	x0, #1
-	bl	dbg_print
-	bl	dbg_print_sp
-
+	/* --------------------------------------------
+	 * Allocate a stack. So far only the primary
+	 * cpu is running at the moment.
+	 * --------------------------------------------
+	 */
 	mrs	x0, mpidr_el1
 	bl	platform_set_stack
 
-	/* Jason Debug */
-	mov	x0, #2
-	bl	dbg_print
-	bl	dbg_print_sp
-
-	/* Jump to main function. */
+	/* ---------------------------------------------
+	 * Jump to main function.
+	 * ---------------------------------------------
+	 */
 	bl	hyp_main
 
 	b	hyp_exit
 
 	/* -----------------------------------------------------
-	 * Make sure we boot at EL2, otherwise passby.
+	 * Make sure it's booting at EL2, otherwise passby.
 	 * -----------------------------------------------------
 	 */
-el2_setup:
+el2_check:
 	mrs     x0, CurrentEL
 	cmp     x0, #ID_AA64PFR0_EL2_SHIFT
 	ret

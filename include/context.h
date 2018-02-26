@@ -91,22 +91,15 @@
 #define CTX_AFSR1_EL1		0xc8
 #define CTX_CONTEXTIDR_EL1	0xd0
 #define CTX_VBAR_EL1		0xd8
-/*
- * If the timer registers aren't saved and restored, we don't have to reserve
- * space for them in the context
- */
-#if NS_TIMER_SWITCH
-#define CTX_CNTP_CTL_EL0	0xe0
-#define CTX_CNTP_CVAL_EL0	0xe8
-#define CTX_CNTV_CTL_EL0	0xf0
-#define CTX_CNTV_CVAL_EL0	0xf8
-#define CTX_CNTKCTL_EL1		0x100
+#define CTX_VBAR_EL2		0xe0
+#define CTX_VPIDR_EL2		0xe8
+#define CTX_VMPIDR_EL2		0xf0
+#define CTX_VTCR_EL2		0xf8
+#define CTX_VTTBR_EL2		0x100
 #define CTX_FP_FPEXC32_EL2	0x108
-#define CTX_SYSREGS_END		0x110
-#else /* NS_TIMER_SWITCH */
-#define CTX_FP_FPEXC32_EL2	0xe0
-#define CTX_SYSREGS_END		0xf0
-#endif /* NS_TIMER_SWITCH */
+#define CTX_SYSREGS_END		0x180
+
+#ifndef __ASSEMBLY__
 
 #include <cassert.h>
 #include <platform_def.h>	/* for CACHE_WRITEBACK_GRANULE */
@@ -234,5 +227,7 @@ void el1_sysregs_context_restore(el1_sys_regs_t *regs);
 #undef CTX_SYSREG_ALL
 #undef CTX_GPREG_ALL
 #undef CTX_EL2STATE_ALL
+
+#endif /* __ASSEMBLY__ */
 
 #endif /* __CONTEXT_H__ */
