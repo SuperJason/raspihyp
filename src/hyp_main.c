@@ -72,7 +72,9 @@ void hyp_main(void)
 	vm_init();
 	hyp_init();
 	hyp_enable();
-	vm_boot();
+	vm_boot_prepare();
+
+	prepare_el2_exit();
 }
 
 void cpu_test(void)

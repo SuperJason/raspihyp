@@ -13,6 +13,49 @@
 
 cpu_context_t vcpu_context[HYP_VCPU_COUNT];
 
+/*******************************************************************************
+ * This function is used to program the context that's used for exception
+ * return. This initializes the SP_EL2 to a pointer to a 'cpu_context'
+ ******************************************************************************/
+static inline void set_next_context(void *context)
+{
+#if DEBUG
+	uint64_t sp_mode;
+
+	/*
+	 * Check that this function is called with SP_EL0 as the stack
+	 * pointer
+	 */
+	__asm__ volatile("mrs	%0, SPSel\n"
+			 : "=r" (sp_mode));
+
+	assert(sp_mode == MODE_SP_EL0);
+#endif
+
+	__asm__ volatile("msr	spsel, #1\n"
+			 "mov	sp, %0\n"
+			 "msr	spsel, #0\n"
+			 : : "r" (context));
+}
+
+/*******************************************************************************
+ * Prepare the CPU system registers for entry into EL1
+ ******************************************************************************/
+void prepare_el2_exit(void)
+{
+	cpu_context_t *ctx = get_cpu_data(cpu_context);
+
+	assert(ctx);
+
+	/* TODO:
+	 * ...
+	 *
+	el1_sysregs_context_restore(get_sysregs_ctx(ctx));
+	 */
+
+	set_next_context(ctx);
+}
+
 void cpu_data_init(uint64_t mpidr)
 {
 	uint64_t vcpu, cluster, cpu;
@@ -45,6 +88,7 @@ void init_context(uint64_t mpidr, entry_point_info_t *ep)
 	/* Clear any residual register values from the context */
 	memset(ctx, 0, sizeof(*ctx));
 
+	/* TODO */
 	hcr_el2 = read_hcr();
 	hcr_el2 &= ~(HCR_IMO_BIT);
 	write_hcr(hcr_el2);

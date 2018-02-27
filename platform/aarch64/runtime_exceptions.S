@@ -9,7 +9,7 @@
 	.globl	el2_exit
 
 	/* -----------------------------------------------------
-	 * Handle SMC exceptions separately from other sync.
+	 * Handle HVC exceptions separately from other sync
 	 * exceptions.
 	 * -----------------------------------------------------
 	 */
@@ -22,6 +22,12 @@
 	mrs	x30, esr_el2
 	ubfx	x30, x30, #ESR_EC_SHIFT, #ESR_EC_LENGTH
 
+	cmp	x30, #EC_AARCH32_HVC
+	b.eq	hvc_handler32
+
+	cmp	x30, #EC_AARCH64_HVC
+	b.eq	hvc_handler64
+
 	cmp	x30, #EC_AARCH32_SMC
 	b.eq	smc_handler32
 
@@ -31,7 +37,7 @@
 
 	/* -----------------------------------------------------
 	 * The following code handles any synchronous exception
-	 * that is not an SMC.
+	 * that is not an HVC.
 	 * -----------------------------------------------------
 	 */
 
@@ -204,7 +210,7 @@ serror_sp_elx:
 sync_exception_aarch64:
 	/* -----------------------------------------------------
 	 * This exception vector will be the entry point for
-	 * SMCs and traps that are unhandled at lower ELs most
+	 * HVCs and traps that are unhandled at lower ELs most
 	 * commonly. SP_EL2 should point to a valid cpu context
 	 * where the general purpose and system register state
 	 * can be saved.
@@ -241,7 +247,7 @@ serror_aarch64:
 sync_exception_aarch32:
 	/* -----------------------------------------------------
 	 * This exception vector will be the entry point for
-	 * SMCs and traps that are unhandled at lower ELs most
+	 * HVCs and traps that are unhandled at lower ELs most
 	 * commonly. SP_EL2 should point to a valid cpu context
 	 * where the general purpose and system register state
 	 * can be saved.
@@ -273,70 +279,26 @@ serror_aarch32:
 	.align	7
 
 	/* -----------------------------------------------------
-	 * The following code handles secure monitor calls.
-	 * Depending upon the execution state from where the SMC
-	 * has been invoked, it frees some general purpose
-	 * registers to perform the remaining tasks. They
-	 * involve finding the runtime service handler that is
-	 * the target of the SMC & switching to runtime stacks
-	 * (SP_EL0) before calling the handler.
+	 * The following code handles hypervisor calls.
 	 *
 	 * Note that x30 has been explicitly saved and can be
 	 * used here
 	 * -----------------------------------------------------
 	 */
-func smc_handler
-smc_handler32:
-	/* Check whether aarch32 issued an SMC64 */
-	tbnz	x0, #FUNCID_CC_SHIFT, smc_prohibited
+hvc_handler32:
+hvc_handler64:
+	bl save_gp_registers
 
 	/* -----------------------------------------------------
-	 * Since we're are coming from aarch32, x8-x18 need to
-	 * be saved as per SMC32 calling convention. If a lower
-	 * EL in aarch64 is making an SMC32 call then it must
-	 * have saved x8-x17 already therein.
+	 * Save the SPSR_EL2, ELR_EL2, & HCR_EL2 in case there
+	 * is a world switch during HVC handling.
 	 * -----------------------------------------------------
 	 */
-	stp	x8, x9, [sp, #CTX_GPREGS_OFFSET + CTX_GPREG_X8]
-	stp	x10, x11, [sp, #CTX_GPREGS_OFFSET + CTX_GPREG_X10]
-	stp	x12, x13, [sp, #CTX_GPREGS_OFFSET + CTX_GPREG_X12]
-	stp	x14, x15, [sp, #CTX_GPREGS_OFFSET + CTX_GPREG_X14]
-	stp	x16, x17, [sp, #CTX_GPREGS_OFFSET + CTX_GPREG_X16]
-
-	/* x4-x7, x18, sp_el0 are saved below */
-
-smc_handler64:
-	/* -----------------------------------------------------
-	 * Populate the parameters for the SMC handler. We
-	 * already have x0-x4 in place. x5 will point to a
-	 * cookie (not used now). x6 will point to the context
-	 * structure (SP_EL2) and x7 will contain flags we need
-	 * to pass to the handler Hence save x5-x7. Note that x4
-	 * only needs to be preserved for AArch32 callers but we
-	 * do it for AArch64 callers as well for convenience
-	 * -----------------------------------------------------
-	 */
-	stp	x4, x5, [sp, #CTX_GPREGS_OFFSET + CTX_GPREG_X4]
-	stp	x6, x7, [sp, #CTX_GPREGS_OFFSET + CTX_GPREG_X6]
-
-	/* Save rest of the gpregs and sp_el0*/
-	save_x18_to_x29_sp_el0
-
-	mov	x5, xzr
-	mov	x6, sp
-
-	/* Get the unique owning entity number */
-	ubfx	x16, x0, #FUNCID_OEN_SHIFT, #FUNCID_OEN_WIDTH
-	ubfx	x15, x0, #FUNCID_TYPE_SHIFT, #FUNCID_TYPE_WIDTH
-	orr	x16, x16, x15, lsl #FUNCID_OEN_WIDTH
-
-	/*adr	x11, (__RT_SVC_DESCS_START__ + RT_SVC_DESC_HANDLE)
-	 */
-
-	/* Load descriptor index from array of indices */
-	/* adr	x14, rt_svc_descs_indices
-	 */
-	ldrb	w15, [x14, x16]
+	mrs	x16, spsr_el2
+	mrs	x17, elr_el2
+	mrs	x18, hcr_el2
+	stp	x16, x17, [sp, #CTX_EL2STATE_OFFSET + CTX_SPSR_EL2]
+	str	x18, [sp, #CTX_EL2STATE_OFFSET + CTX_HCR_EL2]
 
 	/* -----------------------------------------------------
 	 * Restore the saved C runtime stack value which will
@@ -345,67 +307,33 @@ smc_handler64:
 	 * ERET from EL2.
 	 * -----------------------------------------------------
 	 */
-	ldr	x12, [x6, #CTX_EL2STATE_OFFSET + CTX_RUNTIME_SP]
-
-	/*
-	 * Any index greater than 127 is invalid. Check bit 7 for
-	 * a valid index
-	 */
-	tbnz	w15, 7, smc_unknown
+	ldr	x12, [sp, #CTX_EL2STATE_OFFSET + CTX_RUNTIME_SP]
 
 	/* Switch to SP_EL0 */
 	msr	spsel, #0
 
-	/* -----------------------------------------------------
-	 * Get the descriptor using the index
-	 * x11 = (base + off), x15 = index
-	 *
-	 * handler = (base + off) + (index << log2(size))
-	 * -----------------------------------------------------
-	 */
-	lsl	w10, w15, #RT_SVC_SIZE_LOG2
-	ldr	x15, [x11, w10, uxtw]
-
-	/* -----------------------------------------------------
-	 * Save the SPSR_EL2, ELR_EL2, & HCR_EL2 in case there
-	 * is a world switch during SMC handling.
-	 * TODO: Revisit if all system registers can be saved
-	 * later.
-	 * -----------------------------------------------------
-	 */
-	mrs	x16, spsr_el2
-	mrs	x17, elr_el2
-	mrs	x18, hcr_el2
-	stp	x16, x17, [x6, #CTX_EL2STATE_OFFSET + CTX_SPSR_EL2]
-	str	x18, [x6, #CTX_EL2STATE_OFFSET + CTX_HCR_EL2]
-
 	mov	sp, x12
 
 	/* -----------------------------------------------------
-	 * Call the Secure Monitor Call handler and then drop
-	 * directly into el2_exit() which will program any
-	 * remaining architectural state prior to issuing the
-	 * ERET to the desired lower EL.
+	 * ------------                                      ---
+	 * --- TODO ---      handle hvc here actually        ---
+	 * ------------                                      ---
 	 * -----------------------------------------------------
 	 */
-#if DEBUG
-	cbz	x15, rt_svc_fw_critical_error
-#endif
-	blr	x15
 
 	/* -----------------------------------------------------
 	 * This routine assumes that the SP_EL2 is pointing to
 	 * a valid context structure from where the gp regs and
 	 * other special registers can be retrieved.
 	 *
-	 * Keep it in the same section as smc_handler as this
+	 * Keep it in the same section as hvc_handler as this
 	 * function uses a fall-through to el2_exit
 	 * -----------------------------------------------------
 	 */
 el2_exit: ; .type el2_exit, %function
 	/* -----------------------------------------------------
 	 * Save the current SP_EL0 i.e. the EL2 runtime stack
-	 * which will be used for handling the next SMC. Then
+	 * which will be used for handling the next HVC. Then
 	 * switch to SP_EL2
 	 * -----------------------------------------------------
 	 */
@@ -426,25 +354,19 @@ el2_exit: ; .type el2_exit, %function
 	/* Restore saved general purpose registers and return */
 	b	restore_gp_registers_eret
 
-smc_unknown:
-	/*
-	 * Here we restore x4-x18 regardless of where we came from. AArch32
-	 * callers will find the registers contents unchanged, but AArch64
-	 * callers will find the registers modified (with stale earlier NS
-	 * content). Either way, we aren't leaking any secure information
-	 * through them
+
+	/* -----------------------------------------------------
+	 * The following code handles secure monitor calls.
+	 *
+	 * Note that x30 has been explicitly saved and can be
+	 * used here
+	 * -----------------------------------------------------
 	 */
-	mov	w0, #SMC_UNK
-	b	restore_gp_registers_callee_eret
-
-smc_prohibited:
-	ldr	x30, [sp, #CTX_GPREGS_OFFSET + CTX_GPREG_LR]
-	mov	w0, #SMC_UNK
+func smc_handler
+smc_handler32:
+smc_handler64:
+	smc	#0
 	eret
-
-rt_svc_fw_critical_error:
-	msr	spsel, #1 /* Switch to SP_ELx */
-	bl	report_unhandled_exception
 
 	/* -----------------------------------------------------
 	 * The following functions are used to saved and restore
@@ -473,8 +395,6 @@ func save_gp_registers
 func restore_gp_registers_eret
 	ldp	x0, x1, [sp, #CTX_GPREGS_OFFSET + CTX_GPREG_X0]
 	ldp	x2, x3, [sp, #CTX_GPREGS_OFFSET + CTX_GPREG_X2]
-
-restore_gp_registers_callee_eret:
 	ldp	x4, x5, [sp, #CTX_GPREGS_OFFSET + CTX_GPREG_X4]
 	ldp	x6, x7, [sp, #CTX_GPREGS_OFFSET + CTX_GPREG_X6]
 	ldp	x8, x9, [sp, #CTX_GPREGS_OFFSET + CTX_GPREG_X8]

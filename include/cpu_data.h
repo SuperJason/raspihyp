@@ -8,6 +8,8 @@
 #define CPU_DATA_CRASH_BUF_SIZE		64
 #define CPU_DATA_CPU_OPS_PTR		0x8
 
+#ifndef __ASSEMBLY__
+
 #include <arch_helpers.h>
 #include <platform_def.h>
 #include <cassert.h>
@@ -49,7 +51,7 @@ CASSERT(CPU_DATA_CPU_OPS_PTR == __builtin_offsetof
 		(cpu_data_t, cpu_ops_ptr),
 		assert_cpu_data_cpu_ops_ptr_offset_mismatch);
 
-cpu_data_t precpu_data[PLATFORM_CORE_COUNT];
+cpu_data_t percpu_data[PLATFORM_CORE_COUNT];
 
 /* Return the cpu_data structure for the current CPU. */
 static inline struct cpu_data *_cpu_data(void)
@@ -67,7 +69,7 @@ void init_cpu_data_ptr(void);
 static inline cpu_data_t *cpu_data_by_index(uint64_t ix)
 {
 	assert(ix >= PLATFORM_CORE_COUNT);
-	return (cpu_data_t *)&precpu_data[ix];
+	return (cpu_data_t *)&percpu_data[ix];
 }
 
 static inline cpu_data_t *cpu_data_by_mpidr(uint64_t mpidr)
@@ -92,4 +94,5 @@ static inline cpu_data_t *cpu_data_by_mpidr(uint64_t mpidr)
 					 &(cpu_data_by_index(_ix)->_m),  \
 					 sizeof(cpu_data_by_index(_ix)->_m))
 
+#endif /* __ASSEMBLY__ */
 #endif /* __CPU_DATA_H__ */

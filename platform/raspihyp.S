@@ -47,6 +47,17 @@ __skipspin:
 	bl	el2_check
 
 	/* ---------------------------------------------
+	 * Initialise cpu_data early to enable crash
+	 * reporting to have access to crash stack.
+	 * Since crash reporting depends on cpu_data to
+	 * report the unhandled exception, not
+	 * doing so can lead to recursive exceptions due
+	 * to a NULL TPIDR_EL2
+	 * ---------------------------------------------
+	 */
+	bl	init_cpu_data_ptr
+
+	/* ---------------------------------------------
 	 * Set the exception vector.
 	 * ---------------------------------------------
 	 */
@@ -97,7 +108,7 @@ __skipspin:
 	 */
 	bl	hyp_main
 
-	b	hyp_exit
+	b	el2_exit
 
 	/* -----------------------------------------------------
 	 * Make sure it's booting at EL2, otherwise passby.
@@ -107,9 +118,6 @@ el2_check:
 	mrs     x0, CurrentEL
 	cmp     x0, #ID_AA64PFR0_EL2_SHIFT
 	ret
-
-hyp_exit:
-	eret
 
 	/*
 	 * linux/arch/arm64/kernel/smccc-call.S

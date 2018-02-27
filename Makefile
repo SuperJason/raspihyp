@@ -167,7 +167,9 @@ SOURCES		:= 	$(PLAT_DIR)/raspihyp.S				\
 			$(PLAT_DIR)/console.c				\
 			$(PLAT_DIR)/plat_debug.c			\
 			$(PLAT_DIR)/interrupt.c				\
+			$(PLAT_DIR)/aarch64/asm_context.S		\
 			$(PLAT_DIR)/aarch64/cache_helpers.S		\
+			$(PLAT_DIR)/aarch64/cpu_data.S			\
 			$(PLAT_DIR)/aarch64/crash_reporting.S		\
 			$(PLAT_DIR)/aarch64/misc_helpers.S		\
 			$(PLAT_DIR)/aarch64/runtime_exceptions.S	\

@@ -99,7 +99,7 @@ static void serial8250_out(int offset, int value)
 static void wait_for_xmitr(void)
 {
   unsigned int status;
-  
+
   for (;;) {
     status = serial8250_in(UART_LSR);
     if ((status & BOTH_EMPTY) == BOTH_EMPTY)

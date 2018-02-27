@@ -46,6 +46,7 @@ void mm_init(void);
 void cpu_data_init(uint64_t mpidr);
 void init_context(uint64_t mpidr, entry_point_info_t *ep);
 void vm_init(void);
-void vm_boot(void);
+void vm_boot_prepare(void);
+void prepare_el2_exit(void);
 
 #endif /* __HYP_H__ */

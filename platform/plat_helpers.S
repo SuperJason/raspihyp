@@ -1,10 +1,11 @@
-/* 
+/*
  * Copyright (c) 2017, HongluoStuido.com. All rights reserved.
  */
 #include <asm_macros.S>
 
 	.globl	plat_crash_console_init
 	.globl	plat_crash_console_putc
+	.globl  platform_get_core_pos
 	.globl  plat_report_hypmsg
 
 
@@ -69,3 +70,12 @@ func plat_report_hypmsg
 	b	1b
 2:	
 	ret	x9
+
+	/*
+	 * Return 0 to 3
+	 */
+func platform_get_core_pos
+	and     x1, x0, #MPIDR_CPU_MASK
+	and     x0, x0, #MPIDR_CLUSTER_MASK
+	add     x0, x1, x0, LSR #6
+	ret

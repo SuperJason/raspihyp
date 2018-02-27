@@ -14,8 +14,8 @@
  *   - Non-Secure DRAM (remaining DRAM starting at DRAM_BASE)
  * TEE-shared nonsec starts at 0x20000 ; with 4MB shared
  */
-# define DRAM_NS_BASE			(0x08000000) 
-# define DRAM_NS_SIZE			(4 * 1024 * 1024) 
+# define DRAM_NS_BASE			(0x08000000)
+# define DRAM_NS_SIZE			(4 * 1024 * 1024)
 
 # define DRAM_SEC_BASE			(DRAM_NS_BASE + DRAM_NS_SIZE)	   /* ATF load address */
 # define DRAM_SEC_SIZE			(28 * 1024 * 1024)
@@ -39,8 +39,8 @@
 /* Size of cacheable stacks */
 #define PLATFORM_STACK_SIZE		0x800
 
-#define PLATFORM_CLUSTER_COUNT          1                                        
-#define PLATFORM_CORE_COUNT             4 
+#define PLATFORM_CLUSTER_COUNT          1
+#define PLATFORM_CORE_COUNT             4
 
 #define HYP_VCPU_COUNT	4
 

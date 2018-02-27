@@ -4,11 +4,12 @@
 
 #include <arch_helpers.h>
 #include <debug.h>
+#include <hyp.h>
 
 void vm_init(void)
 {
 }
 
-void vm_boot(void)
+void vm_boot_prepare(void)
 {
 }
