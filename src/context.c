@@ -66,7 +66,7 @@ void cpu_data_init(uint64_t mpidr)
 	/* TODO: How to get vcpu from mpidr */
 	vcpu = cpu;
 
-	assert(cpu >= HYP_VCPU_COUNT);
+	assert(cpu <= HYP_VCPU_COUNT);
 	cpu_data_p->cpu_context = &vcpu_context[vcpu];
 
 	write_tpidr_el2((uint64_t)cpu_data_p);
@@ -79,8 +79,6 @@ void init_context(uint64_t mpidr, entry_point_info_t *ep)
 	gp_regs_t *gp_regs;
 	uint32_t hcr_el2;
 	unsigned long sctlr_elx;
-
-	cpu_data_init(mpidr);
 
 	ctx = cpu_data_by_mpidr(mpidr)->cpu_context;
 	assert(ctx);

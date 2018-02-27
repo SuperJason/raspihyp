@@ -75,16 +75,20 @@ void hyp_main(void)
 	vm_boot_prepare();
 
 	prepare_el2_exit();
+	pr_debug("Exit from %s()\n", __func__);
 }
 
 void cpu_test(void)
 {
+	/*
 	unsigned long cpu_id;
+	*/
 
 	pr_debug("-----Here is cpu bringup-----\n");
 	pr_debug("midr_el1 = 0x%x\n", read_midr_el1());
 	pr_debug("mpidr_el1 = 0x%x\n", read_mpidr_el1());
 
+	/*
 	cpu_id = (read_mpidr_el1() & 0xff00ffffff) + 1;
 
 	arm_smccc_smc(0x84000000, 0, 0, 0, 0, 0, 0, 0, &cpu_res);
@@ -92,6 +96,7 @@ void cpu_test(void)
 	pr_debug("Start Next CPU %d\n", cpu_id);
 	arm_smccc_smc(0xc4000003, cpu_id, (unsigned long)hyp_entrypoint, 0, 0, 0, 0, 0, &cpu_res);
 	pr_debug("res a0 = %d, a1 = %d, a2 = %d, a3 = %d\n", cpu_res.a0, cpu_res.a1, cpu_res.a2, cpu_res.a3);
+	*/
 }
 
 void mmu_test(void)

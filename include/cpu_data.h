@@ -68,7 +68,7 @@ void init_cpu_data_ptr(void);
 
 static inline cpu_data_t *cpu_data_by_index(uint64_t ix)
 {
-	assert(ix >= PLATFORM_CORE_COUNT);
+	assert(ix <= PLATFORM_CORE_COUNT);
 	return (cpu_data_t *)&percpu_data[ix];
 }
 
