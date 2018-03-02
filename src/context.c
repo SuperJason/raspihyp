@@ -49,9 +49,8 @@ void prepare_el2_exit(void)
 
 	/* TODO:
 	 * ...
-	 *
-	el1_sysregs_context_restore(get_sysregs_ctx(ctx));
 	 */
+	el1_sysregs_context_restore(get_sysregs_ctx(ctx));
 
 	set_next_context(ctx);
 }
