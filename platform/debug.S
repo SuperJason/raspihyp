@@ -12,6 +12,7 @@
 	.globl  do_debug_report
 	.globl  dbg_print
 	.globl  dbg_print_sp
+	.globl  el1_dbg_print
 
 /* Since the max decimal input number is 65536 */
 #define MAX_DEC_DIVISOR		10000
@@ -189,3 +190,14 @@ func dbg_print_sp
 	mov	x0, sp
 	bl	dbg_print
 	ret	x11
+
+el1_dbg_print_start:
+	.asciz "## Exception Level is EL1 ##"
+
+	.align 8
+func el1_dbg_print
+	mov	x10, x30
+	mov	x6, x0
+	adr	x4, el1_dbg_print_start
+	bl	asm_print_str
+	ret	x10

@@ -43,9 +43,18 @@ static inline void set_next_context(void *context)
  ******************************************************************************/
 void prepare_el2_exit(void)
 {
+	uint64_t hcr_el2;
 	cpu_context_t *ctx = get_cpu_data(cpu_context);
 
 	assert(ctx);
+
+	hcr_el2 = read_hcr();
+	pr_debug("%s(): hcr_el2 = 0x%x\n", __func__, hcr_el2);
+	hcr_el2 |= HCR_RW_BIT;
+	pr_debug("%s(): hcr_el2 = 0x%x\n", __func__, hcr_el2);
+	write_hcr(hcr_el2);
+	hcr_el2 = read_hcr();
+	pr_debug("%s(): read after write hcr_el2 = 0x%x\n", __func__, hcr_el2);
 
 	/* TODO:
 	 * ...

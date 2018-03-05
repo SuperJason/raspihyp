@@ -23,6 +23,55 @@ __uboot_data:
 	.quad 0
 	.quad 0
 __skipspin:
+	mov	x0, #0xabcd
+	mov	x1, #0x1234
+	add	x0, x1, x0, LSL #16
+	bl	dbg_print
+	mrs     x0, CurrentEL
+	bl	dbg_print
+
+	/* ---------------------------------------------
+	 * Check EL
+	 * ---------------------------------------------
+	 */
+	bl	el2_check
+
+	/* ---------------------------------------------
+	 * Show something at the beginning of EL2
+	 * ---------------------------------------------
+	 */
+	bl	plat_report_hypmsg
+
+	/* Debug Start */
+#if 1
+	mov	x16, #0x3c5
+	msr	spsr_el2, x16
+	mov	x0, x16
+	bl	dbg_print
+
+	/* HYP boot in EL1 & EL2 successfully */
+	mov	x0, #0x0600
+	/* Linux boot in EL1 & EL2 failed
+	mov	x0, #0x0008 */
+	/* Linux boot in EL1 & EL2 failed
+	mov	x0, #0x1000 */
+	mov	x1, #0x0000
+	add	x16, x1, x0, LSL #16
+	msr	elr_el2, x16
+	mov	x0, x16
+	bl	dbg_print
+
+	mov	x0, #0x8000
+	mov	x1, #0x0002
+	add	x16, x1, x0, LSL #16
+	msr	hcr_el2, x16
+	mov	x0, x16
+	bl	dbg_print
+
+	eret
+#endif
+	/* Debug End */
+
 	/* ---------------------------------------------
 	 * Set the CPU endianness before doing anything
 	 * that might involve memory reads or writes.
@@ -32,19 +81,6 @@ __skipspin:
 	bic	x0, x0, #SCTLR_EE_BIT
 	msr	sctlr_el2, x0
 	isb
-
-	/* ---------------------------------------------
-	 * Show something at the beginning
-	 * ---------------------------------------------
-	 */
-	bl	plat_report_hypmsg
-
-
-	/* ---------------------------------------------
-	 * Check EL
-	 * ---------------------------------------------
-	 */
-	bl	el2_check
 
 	/* ---------------------------------------------
 	 * Initialise cpu_data early to enable crash
@@ -117,7 +153,21 @@ __skipspin:
 el2_check:
 	mrs     x0, CurrentEL
 	cmp     x0, #ID_AA64PFR0_EL2_SHIFT
+	b.ne	1f
+
 	ret
+1:
+	mrs	x0, sctlr_el1
+	bic	x0, x0, #SCTLR_EE_BIT
+	msr	sctlr_el1, x0
+	isb
+
+	bl	el1_dbg_print
+
+	/* hvc	#0 */
+el1_spin:
+	b	el1_spin
+
 
 	/*
 	 * linux/arch/arm64/kernel/smccc-call.S

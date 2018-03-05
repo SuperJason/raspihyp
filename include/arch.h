@@ -135,7 +135,16 @@
 #define SCR_VALID_BIT_MASK	0x2f8f
 
 /* HCR definitions */
+#define HCR_MIOCNCE_BIT		(1ull << 38)
+#define HCR_TEA_BIT		(1ull << 37)
+#define HCR_TERR_BIT		(1ull << 36)
+#define HCR_ID_BIT		(1ull << 33)
+#define HCR_CD_BIT		(1ull << 32)
 #define HCR_RW_BIT		(1ull << 31)
+#define HCR_TRVM_BIT		(1ull << 30)
+#define HCR_HCD_BIT		(1ull << 29) /* RES0, EL3 is implemented */
+#define HCR_TDZ_BIT		(1ull << 28)
+#define HCR_TGE_BIT		(1ull << 27)
 #define HCR_AMO_BIT		(1 << 5)
 #define HCR_IMO_BIT		(1 << 4)
 #define HCR_FMO_BIT		(1 << 3)

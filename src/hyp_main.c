@@ -49,7 +49,6 @@ void hyp_main(void)
 {
 	entry_point_info_t *ep = &entry_point_info;
 	uint64_t mpidr;
-	void (*p_fun)(void) = 0;
 
 	dbg_print(0x10);
 	dbg_print_sp();
@@ -65,8 +64,9 @@ void hyp_main(void)
 	mm_init();
 
 	mpidr = read_mpidr();
-	ep->spsr = 0x3c9;
-	ep->pc = 0x80000;
+	ep->spsr = 0x3c5;
+	//ep->pc = 0x00080000;
+	ep->pc = 0x06000000;
 
 	cpu_data_init(mpidr);
 	init_context(mpidr, ep);
@@ -74,9 +74,6 @@ void hyp_main(void)
 	hyp_init();
 	hyp_enable();
 	vm_boot_prepare();
-	pr_debug("%s():%d\n", __func__, __LINE__);
-	p_fun();
-	pr_debug("%s():%d\n", __func__, __LINE__);
 
 	prepare_el2_exit();
 	pr_debug("Exit from %s()\n", __func__);
