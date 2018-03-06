@@ -43,18 +43,9 @@ static inline void set_next_context(void *context)
  ******************************************************************************/
 void prepare_el2_exit(void)
 {
-	uint64_t hcr_el2;
 	cpu_context_t *ctx = get_cpu_data(cpu_context);
 
 	assert(ctx);
-
-	hcr_el2 = read_hcr();
-	pr_debug("%s(): hcr_el2 = 0x%x\n", __func__, hcr_el2);
-	hcr_el2 |= HCR_RW_BIT;
-	pr_debug("%s(): hcr_el2 = 0x%x\n", __func__, hcr_el2);
-	write_hcr(hcr_el2);
-	hcr_el2 = read_hcr();
-	pr_debug("%s(): read after write hcr_el2 = 0x%x\n", __func__, hcr_el2);
 
 	/* TODO:
 	 * ...
@@ -85,8 +76,7 @@ void init_context(uint64_t mpidr, entry_point_info_t *ep)
 	cpu_context_t *ctx;
 	el2_state_t *state;
 	gp_regs_t *gp_regs;
-	uint32_t hcr_el2;
-	unsigned long sctlr_elx;
+	uint64_t hcr_el2, sctlr_elx, vbar_el2;
 
 	ctx = cpu_data_by_mpidr(mpidr)->cpu_context;
 	assert(ctx);
@@ -95,13 +85,14 @@ void init_context(uint64_t mpidr, entry_point_info_t *ep)
 	memset(ctx, 0, sizeof(*ctx));
 
 	/* TODO */
-	hcr_el2 = read_hcr();
-	hcr_el2 &= ~(HCR_IMO_BIT);
-	write_hcr(hcr_el2);
-
-	sctlr_elx = SCTLR_EL1_RES1 | SCTLR_EE_BIT;
+	sctlr_elx = read_sctlr_el1();
+	sctlr_elx &= ~(SCTLR_EE_BIT);
 	write_ctx_reg(get_sysregs_ctx(ctx), CTX_SCTLR_EL1, sctlr_elx);
+	vbar_el2 = read_vbar_el2();
+	write_ctx_reg(get_sysregs_ctx(ctx), CTX_VBAR_EL2, vbar_el2);
 
+	hcr_el2 = read_hcr();
+	hcr_el2 |= HCR_RW_BIT;
 	/* Populate EL2 state so that we've the right context before doing ERET */
 	state = get_el2state_ctx(ctx);
 	write_ctx_reg(state, CTX_HCR_EL2, hcr_el2);

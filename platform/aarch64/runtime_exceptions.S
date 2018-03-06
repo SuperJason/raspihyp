@@ -351,6 +351,8 @@ el2_exit: ; .type el2_exit, %function
 	msr	spsr_el2, x16
 	msr	elr_el2, x17
 
+	mov	x0, x18
+	bl	dbg_print
 	mov	x0, x16
 	bl	dbg_print
 	mov	x0, x17

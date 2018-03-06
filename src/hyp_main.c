@@ -76,6 +76,8 @@ void hyp_main(void)
 	vm_boot_prepare();
 
 	prepare_el2_exit();
+	pr_notice("print_sys_regs before el2 exit\n");
+	print_sys_regs();
 	pr_debug("Exit from %s()\n", __func__);
 }
 

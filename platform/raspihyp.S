@@ -43,7 +43,7 @@ __skipspin:
 	bl	plat_report_hypmsg
 
 	/* Debug Start */
-#if 1
+#if 0
 	mov	x16, #0x3c5
 	msr	spsr_el2, x16
 	mov	x0, x16
