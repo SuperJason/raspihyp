@@ -23,6 +23,7 @@ __uboot_data:
 	.quad 0
 	.quad 0
 __skipspin:
+	bl	dbg_print
 	mov	x0, #0xabcd
 	mov	x1, #0x1234
 	add	x0, x1, x0, LSL #16

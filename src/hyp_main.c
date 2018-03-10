@@ -49,6 +49,7 @@ void hyp_main(void)
 {
 	entry_point_info_t *ep = &entry_point_info;
 	uint64_t mpidr;
+	unsigned int *p;
 
 	dbg_print(0x10);
 	dbg_print_sp();
@@ -65,8 +66,8 @@ void hyp_main(void)
 
 	mpidr = read_mpidr();
 	ep->spsr = 0x3c5;
-	//ep->pc = 0x00080000;
-	ep->pc = 0x06000000;
+	ep->pc = 0x00080000;
+	//ep->pc = 0x06000000;
 
 	cpu_data_init(mpidr);
 	init_context(mpidr, ep);
@@ -75,9 +76,12 @@ void hyp_main(void)
 	hyp_enable();
 	vm_boot_prepare();
 
+	p = (unsigned int*)0x00080000;
+	pr_debug("HYP: Try to read addr: 0x%llx\n", (unsigned long long)p);
+	pr_debug(" [0]:0x%x, [1]:0x%x, [2]:0x%x, [3]:0x%x\n\t  [4]:0x%x, [5]:0x%x, [6]:0x%x, [7]:0x%x\n",
+		p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8]);
+
 	prepare_el2_exit();
-	pr_notice("print_sys_regs before el2 exit\n");
-	print_sys_regs();
 	pr_debug("Exit from %s()\n", __func__);
 }
 

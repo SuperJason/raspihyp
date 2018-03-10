@@ -52,6 +52,8 @@ void prepare_el2_exit(void)
 	 */
 	el1_sysregs_context_restore(get_sysregs_ctx(ctx));
 
+	set_aapcs_args0(ctx, 0x39f2d000);
+
 	set_next_context(ctx);
 }
 
