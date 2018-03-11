@@ -67,7 +67,14 @@ void hyp_main(void)
 	mpidr = read_mpidr();
 	ep->spsr = 0x3c5;
 	ep->pc = 0x00080000;
-	//ep->pc = 0x06000000;
+
+#define DEBUG_BOOT_KERNEL 0
+#define DEBUG_BOOT_E1_HYP 1
+#if DEBUG_BOOT_KERNEL
+	ep->pc = 0x00080000;
+#elif DEBUG_BOOT_E1_HYP
+	ep->pc = 0x06000000;
+#endif
 
 	cpu_data_init(mpidr);
 	init_context(mpidr, ep);

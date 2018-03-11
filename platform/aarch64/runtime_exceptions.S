@@ -320,6 +320,8 @@ hvc_handler64:
 	 * ------------                                      ---
 	 * -----------------------------------------------------
 	 */
+	mrs	x0, esr_el2
+	bl	handled_exception_print
 
 	/* -----------------------------------------------------
 	 * This routine assumes that the SP_EL2 is pointing to
@@ -356,6 +358,11 @@ el2_exit: ; .type el2_exit, %function
 	mov	x0, x16
 	bl	dbg_print
 	mov	x0, x17
+	bl	dbg_print
+
+	/* Jason adds for debug */
+	mov     x0, #0xaaff
+	movk    x0, #0x0000, lsl #16
 	bl	dbg_print
 
 	/* Restore saved general purpose registers and return */

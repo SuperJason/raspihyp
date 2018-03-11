@@ -145,6 +145,11 @@ __skipspin:
 	 */
 	bl	hyp_main
 
+	/* Jason adds for debug */
+	mov     x0, #0xaafe
+	movk    x0, #0x0000, lsl #16
+	bl	dbg_print
+
 	b	el2_exit
 
 	/* -----------------------------------------------------
@@ -165,7 +170,7 @@ el2_check:
 
 	bl	el1_dbg_print
 
-	/* hvc	#0 */
+	hvc	#0xbcda
 el1_spin:
 	b	el1_spin
 
