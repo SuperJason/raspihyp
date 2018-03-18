@@ -78,15 +78,32 @@ void print_sys_regs(void)
 	PRINT_SYSREG(cptr_el2);
 
 	PRINT_SYSREG(cpacr_el1);
+
 	PRINT_SYSREG(cntfrq_el0);
-	/*
+	PRINT_SYSREG(cnthctl_el2);
+	PRINT_SYSREG(cnthp_ctl_el2);
+	PRINT_SYSREG(cnthp_cval_el2);
+	PRINT_SYSREG(cnthp_tval_el2);
+	/* Hypervisor Virtal Timer is introduced in armv8.1
+	PRINT_SYSREG(cnthv_ctl_el2);
+	PRINT_SYSREG(cnthv_cval_el2);
+	PRINT_SYSREG(cnthv_tval_el2);
+	PRINT_SYSREG(cnthv_tval_el2);
+	*/
+	PRINT_SYSREG(cntkctl_el1);
+	PRINT_SYSREG(cntp_ctl_el0);
+	PRINT_SYSREG(cntp_cval_el0);
+	PRINT_SYSREG(cntp_tval_el0);
+	PRINT_SYSREG(cntpct_el0);
+	/* Secure Timer 
 	PRINT_SYSREG(cntps_ctl_el1);
 	PRINT_SYSREG(cntps_tval_el1);
 	PRINT_SYSREG(cntps_cval_el1);
-	PRINT_SYSREG(cntpct_el0);
-	PRINT_SYSREG(cnthctl_el2);
 	*/
-
+	PRINT_SYSREG(cntv_ctl_el0);
+	PRINT_SYSREG(cntv_cval_el0);
+	PRINT_SYSREG(cntv_tval_el0);
+	PRINT_SYSREG(cntvct_el0);
 	PRINT_SYSREG(cntvoff_el2);
 
 	PRINT_SYSREG(vpidr_el2);

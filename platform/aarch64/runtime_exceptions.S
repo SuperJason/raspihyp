@@ -56,6 +56,13 @@
 	str	x30, [sp, #CTX_GPREGS_OFFSET + CTX_GPREG_LR]
 	bl	save_gp_registers
 
+	/* Jason adds for debug */
+	mov     x0, x20
+	bl	dbg_print
+	mov     x0, #0xa800
+	movk    x0, #0x0000, lsl #16
+	bl	dbg_print
+
 	/* Switch to the runtime stack i.e. SP_EL0 */
 	ldr	x2, [sp, #CTX_EL2STATE_OFFSET + CTX_RUNTIME_SP]
 	mov	x20, sp
@@ -226,11 +233,15 @@ sync_exception_aarch64:
 	 * -----------------------------------------------------
 	 */
 irq_aarch64:
+	mov     x20, #0xa860
+	movk    x20, #0x0000, lsl #16
 	handle_interrupt_exception irq_aarch64
 	check_vector_size irq_aarch64
 
 	.align	7
 fiq_aarch64:
+	mov     x20, #0xa861
+	movk    x20, #0x0000, lsl #16
 	handle_interrupt_exception fiq_aarch64
 	check_vector_size fiq_aarch64
 
@@ -263,11 +274,15 @@ sync_exception_aarch32:
 	 * -----------------------------------------------------
 	 */
 irq_aarch32:
+	mov     x20, #0xa832
+	movk    x20, #0x0000, lsl #16
 	handle_interrupt_exception irq_aarch32
 	check_vector_size irq_aarch32
 
 	.align	7
 fiq_aarch32:
+	mov     x20, #0xa832
+	movk    x20, #0x0000, lsl #16
 	handle_interrupt_exception fiq_aarch32
 	check_vector_size fiq_aarch32
 

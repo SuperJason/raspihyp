@@ -5,6 +5,7 @@
 #include <arch_helpers.h>
 #include <debug.h>
 #include <hyp.h>
+#include <rpi3.h>
 
 extern const char build_message[];
 extern const char version_string[];
@@ -51,6 +52,7 @@ void hyp_main(void)
 	uint64_t mpidr;
 	unsigned int *p;
 	unsigned int i;
+	uint64_t reg_val;
 
 	dbg_print(0x10);
 	dbg_print_sp();
@@ -94,6 +96,59 @@ void hyp_main(void)
 		pr_debug(" 0x%x:0x%x\n", &p[i], p[i]);
 	}
 
+	p = (unsigned int*)BCM_LP_CORE_TIMER_LS;
+	pr_debug("BCM_LP_CORE_TIMER_LS 0x%x:0x%x\n", p, *p);
+	p = (unsigned int*)BCM_LP_CORE_TIMER_MS;
+	pr_debug("BCM_LP_CORE_TIMER_MS 0x%x:0x%x\n", p, *p);
+
+	p = (unsigned int*)BCM_LP_CORE_TIMER_LS;
+	pr_debug("BCM_LP_CORE_TIMER_LS 0x%x:0x%x\n", p, *p);
+	p = (unsigned int*)BCM_LP_CORE_TIMER_MS;
+	pr_debug("BCM_LP_CORE_TIMER_MS 0x%x:0x%x\n", p, *p);
+
+	pr_debug("----- EL2 study -----\n");
+	reg_val = read_hcr();
+	pr_debug("hcr: (0x%x)%d\n", reg_val, reg_val);
+	reg_val |= HCR_RW_BIT;
+	//reg_val |= HCR_AMO_BIT;
+	reg_val |= HCR_IMO_BIT;
+	//reg_val |= HCR_FMO_BIT;
+	write_hcr(reg_val);
+	reg_val = read_hcr();
+	pr_debug("hcr: (0x%x)%d\n", reg_val, reg_val);
+	pr_debug("----- Interrupts study -----\n");
+	reg_val = read_daif();
+	pr_debug("daif: (0x%x)%d\n", reg_val, reg_val);
+	enable_irq();
+	reg_val = read_daif();
+	pr_debug("daif: (0x%x)%d\n", reg_val, reg_val);
+	enable_fiq();
+	reg_val = read_daif();
+	pr_debug("daif: (0x%x)%d\n", reg_val, reg_val);
+	enable_serror();
+	reg_val = read_daif();
+	pr_debug("daif: (0x%x)%d\n", reg_val, reg_val);
+
+	pr_debug("----- System time study -----\n");
+#define PRI3_MS	19200
+	reg_val = read_cntpct_el0();
+	pr_debug("cntpct_el0: (0x%x)%d, %d msec\n", reg_val, reg_val, reg_val / PRI3_MS);
+	reg_val = read_cnthp_ctl_el2();
+	pr_debug("cnthp_ctl_el2: (0x%x)%d, %d msec\n", reg_val, reg_val, reg_val / PRI3_MS);
+	reg_val = read_cnthp_cval_el2();
+	pr_debug("cnthp_cval_el2: (0x%x)%d, %d msec\n", reg_val, reg_val, reg_val / PRI3_MS);
+	reg_val = read_cnthp_tval_el2();
+	pr_debug("cnthp_tval_el2: (0x%x)%d, %d msec\n", reg_val, reg_val, reg_val / PRI3_MS);
+	reg_val = read_cntpct_el0();
+	pr_debug("cntpct_el0: (0x%x)%d, %d msec\n", reg_val, reg_val, reg_val / PRI3_MS);
+	/* Generate a timer irq after 10 second
+	reg_val = PRI3_MS * 1000 * 10; */
+	reg_val = PRI3_MS * 1000 * 50; 
+	write_cnthp_tval_el2(reg_val);
+	reg_val = read_cnthp_cval_el2();
+	pr_debug("cnthp_cval_el2: (0x%x)%d, %d msec\n", reg_val, reg_val, reg_val / PRI3_MS);
+	reg_val = read_cnthp_tval_el2();
+	pr_debug("cnthp_tval_el2: (0x%x)%d, %d msec\n", reg_val, reg_val, reg_val / PRI3_MS);
 
 	prepare_el2_exit();
 	pr_debug("Exit from %s()\n", __func__);
