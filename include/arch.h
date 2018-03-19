@@ -145,9 +145,9 @@
 #define HCR_HCD_BIT		(1ull << 29) /* RES0, EL3 is implemented */
 #define HCR_TDZ_BIT		(1ull << 28)
 #define HCR_TGE_BIT		(1ull << 27)
-#define HCR_AMO_BIT		(1 << 5)
-#define HCR_IMO_BIT		(1 << 4)
-#define HCR_FMO_BIT		(1 << 3)
+#define HCR_AMO_BIT		(1ull << 5)
+#define HCR_IMO_BIT		(1ull << 4)
+#define HCR_FMO_BIT		(1ull << 3)
 
 /* CNTHCTL_EL2 definitions */
 #define EVNTEN_BIT		(1 << 2)

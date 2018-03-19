@@ -95,9 +95,9 @@ void init_context(uint64_t mpidr, entry_point_info_t *ep)
 
 	hcr_el2 = read_hcr();
 	hcr_el2 |= HCR_RW_BIT;
-	//hcr_el2 |= HCR_AMO_BIT;
+	hcr_el2 |= HCR_AMO_BIT;
 	hcr_el2 |= HCR_IMO_BIT;
-	//hcr_el2 |= HCR_FMO_BIT;
+	hcr_el2 |= HCR_FMO_BIT;
 	/* Populate EL2 state so that we've the right context before doing ERET */
 	state = get_el2state_ctx(ctx);
 	write_ctx_reg(state, CTX_HCR_EL2, hcr_el2);

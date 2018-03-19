@@ -170,7 +170,7 @@ el2_check:
 
 	bl	el1_dbg_print
 
-	hvc	#0xbcda
+	/* hvc	#0xbcda */
 el1_spin:
 	b	el1_spin
 
