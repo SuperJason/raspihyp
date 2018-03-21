@@ -158,7 +158,7 @@ void hyp_main(void)
 	reg_val = PRI3_MS * 1000 * 10; */
 	/* Generate a timer fiq/irq before eret
 	reg_val = PRI3_MS * 40; */
-	reg_val = PRI3_MS * 1000 * 3;
+	reg_val = PRI3_MS * 1000 * 5;
 	write_cnthp_tval_el2(reg_val);
 	reg_val = read_cnthp_cval_el2();
 	pr_debug("cnthp_cval_el2: (0x%x)%d, %d msec\n", reg_val, reg_val, reg_val / PRI3_MS);

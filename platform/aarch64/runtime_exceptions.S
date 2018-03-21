@@ -56,19 +56,29 @@
 	str	x30, [sp, #CTX_GPREGS_OFFSET + CTX_GPREG_LR]
 	bl	save_gp_registers
 
-	/* Jason adds for debug */
-	mov     x0, x20
-	bl	dbg_print
-	mov     x0, #0xa800
-	movk    x0, #0x0000, lsl #16
-	bl	dbg_print
-
 	/* Switch to the runtime stack i.e. SP_EL0 */
 	ldr	x2, [sp, #CTX_EL2STATE_OFFSET + CTX_RUNTIME_SP]
 	mov	x20, sp
 	msr	spsel, #0
 	mov	sp, x2
 
+	/* Jason adds for debug */
+	mov     x0, x22
+	bl	dbg_print
+	mov     x0, #0x0060
+	movk    x0, #0x4000, lsl #16
+	mov	x1, x0
+	ldr	x0, [x1]
+	bl	dbg_print
+	mrs	x0, cnthp_ctl_el2
+	bl	dbg_print
+	mov	x0, #0xd800 /* 19200 * 1000 * 5 = 96000000(0x5b8d800) */
+	movk	x0, #0x05b8, lsl #16
+	msr	cnthp_tval_el2, x0
+	mrs	x0, cnthp_ctl_el2
+	bl	dbg_print
+
+#if 0
 	/*
 	 * Find out whether this is a valid interrupt type. If the
 	 * interrupt controller reports a spurious interrupt then
@@ -100,6 +110,7 @@
 	cmp	x19, x0
 	b.eq	interrupt_exit_\label
 #endif
+#endif /* 0 */
 
 	/*
 	 * Save the EL2 system registers needed to return from
@@ -115,8 +126,10 @@
 	/*  x3 will point to a cookie (not used now) */
 	mov	x3, xzr
 
+#if 0
 	/* Call the interrupt type handler */
 	blr	x21
+#endif /* 0 */
 
 interrupt_exit_\label:
 	/* Return from exception, possibly in a different security state */
@@ -233,15 +246,15 @@ sync_exception_aarch64:
 	 * -----------------------------------------------------
 	 */
 irq_aarch64:
-	mov     x20, #0xa860
-	movk    x20, #0x0000, lsl #16
+	mov     x22, #0xa860
+	movk    x22, #0x0000, lsl #16
 	handle_interrupt_exception irq_aarch64
 	check_vector_size irq_aarch64
 
 	.align	7
 fiq_aarch64:
-	mov     x20, #0xa861
-	movk    x20, #0x0000, lsl #16
+	mov     x22, #0xa861
+	movk    x22, #0x0000, lsl #16
 	handle_interrupt_exception fiq_aarch64
 	check_vector_size fiq_aarch64
 
@@ -274,15 +287,15 @@ sync_exception_aarch32:
 	 * -----------------------------------------------------
 	 */
 irq_aarch32:
-	mov     x20, #0xa832
-	movk    x20, #0x0000, lsl #16
+	mov     x22, #0xa832
+	movk    x22, #0x0000, lsl #16
 	handle_interrupt_exception irq_aarch32
 	check_vector_size irq_aarch32
 
 	.align	7
 fiq_aarch32:
-	mov     x20, #0xa832
-	movk    x20, #0x0000, lsl #16
+	mov     x22, #0xa832
+	movk    x22, #0x0000, lsl #16
 	handle_interrupt_exception fiq_aarch32
 	check_vector_size fiq_aarch32
 
@@ -373,11 +386,6 @@ el2_exit: ; .type el2_exit, %function
 	mov	x0, x16
 	bl	dbg_print
 	mov	x0, x17
-	bl	dbg_print
-
-	/* Jason adds for debug */
-	mov     x0, #0xaaff
-	movk    x0, #0x0000, lsl #16
 	bl	dbg_print
 
 	/* Restore saved general purpose registers and return */
