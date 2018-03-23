@@ -173,6 +173,7 @@ SOURCES		:= 	$(PLAT_DIR)/raspihyp.S				\
 			$(PLAT_DIR)/aarch64/crash_reporting.S		\
 			$(PLAT_DIR)/aarch64/misc_helpers.S		\
 			$(PLAT_DIR)/aarch64/runtime_exceptions.S	\
+			$(PLAT_DIR)/aarch64/xlat_tables.c		\
 			$(ROOT_DIR)/lib/stdlib/std.c			\
 			$(SRC_DIR)/mm.c					\
 			$(SRC_DIR)/vm.c					\

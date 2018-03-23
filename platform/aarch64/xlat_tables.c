@@ -316,6 +316,6 @@ void init_xlat_tables(void)
 DEFINE_ENABLE_MMU_EL(1,
 		(tcr_ps_bits << TCR_EL1_IPS_SHIFT),
 		tlbivmalle1)
-DEFINE_ENABLE_MMU_EL(3,
+DEFINE_ENABLE_MMU_EL(2,
 		TCR_EL3_RES1 | (tcr_ps_bits << TCR_EL3_PS_SHIFT),
 		tlbialle3)
