@@ -62,6 +62,21 @@
 	msr	spsel, #0
 	mov	sp, x2
 
+#if 0
+	mov	x0, x22
+	bl	dbg_print
+	mrs     x0, CurrentEL
+	bl	dbg_print
+#endif
+#define	IRQ_HANDLER_DEBUG	1
+#if IRQ_HANDLER_DEBUG
+	mov     x0, #0x0060
+	movk    x0, #0x4000, lsl #16
+	mov	x1, x0
+	ldr	x0, [x1]
+	bl	irq_handler
+
+#else
 	/* Jason adds for debug */
 	mov     x0, x22
 	bl	dbg_print
@@ -77,6 +92,7 @@
 	msr	cnthp_tval_el2, x0
 	mrs	x0, cnthp_ctl_el2
 	bl	dbg_print
+#endif
 
 #if 0
 	/*
@@ -164,6 +180,8 @@ runtime_exceptions:
 	 * -----------------------------------------------------
 	 */
 sync_exception_sp_el0:
+	mov     x22, #0xa890
+	movk    x22, #0x0000, lsl #16
 	/* -----------------------------------------------------
 	 * We don't expect any synchronous exceptions from EL2
 	 * -----------------------------------------------------
@@ -178,16 +196,22 @@ sync_exception_sp_el0:
 	 * -----------------------------------------------------
 	 */
 irq_sp_el0:
+	mov     x22, #0xa891
+	movk    x22, #0x0000, lsl #16
 	bl	report_unhandled_interrupt
 	check_vector_size irq_sp_el0
 
 	.align	7
 fiq_sp_el0:
+	mov     x22, #0xa892
+	movk    x22, #0x0000, lsl #16
 	bl	report_unhandled_interrupt
 	check_vector_size fiq_sp_el0
 
 	.align	7
 serror_sp_el0:
+	mov     x22, #0xa893
+	movk    x22, #0x0000, lsl #16
 	bl	report_unhandled_exception
 	check_vector_size serror_sp_el0
 
@@ -197,6 +221,9 @@ serror_sp_el0:
 	 */
 	.align	7
 sync_exception_sp_elx:
+	mov     x22, #0xa894
+	movk    x22, #0x0000, lsl #16
+	mrs     x23, CurrentEl
 	/* -----------------------------------------------------
 	 * This exception will trigger if anything went wrong
 	 * during a previous exception entry or exit or while
@@ -209,16 +236,22 @@ sync_exception_sp_elx:
 
 	.align	7
 irq_sp_elx:
+	mov     x22, #0xa895
+	movk    x22, #0x0000, lsl #16
 	bl	report_unhandled_interrupt
 	check_vector_size irq_sp_elx
 
 	.align	7
 fiq_sp_elx:
+	mov     x22, #0xa896
+	movk    x22, #0x0000, lsl #16
 	bl	report_unhandled_interrupt
 	check_vector_size fiq_sp_elx
 
 	.align	7
 serror_sp_elx:
+	mov     x22, #0xa897
+	movk    x22, #0x0000, lsl #16
 	bl	report_unhandled_exception
 	check_vector_size serror_sp_elx
 
@@ -228,6 +261,10 @@ serror_sp_elx:
 	 */
 	.align	7
 sync_exception_aarch64:
+/*
+	mov     x22, #0xa898
+	movk    x22, #0x0000, lsl #16
+*/
 	/* -----------------------------------------------------
 	 * This exception vector will be the entry point for
 	 * HVCs and traps that are unhandled at lower ELs most
@@ -260,6 +297,8 @@ fiq_aarch64:
 
 	.align	7
 serror_aarch64:
+	mov     x22, #0xa89a
+	movk    x22, #0x0000, lsl #16
 	bl	report_unhandled_exception
 	check_vector_size serror_aarch64
 
@@ -269,6 +308,10 @@ serror_aarch64:
 	 */
 	.align	7
 sync_exception_aarch32:
+/*
+	mov     x22, #0xa89b
+	movk    x22, #0x0000, lsl #16
+*/
 	/* -----------------------------------------------------
 	 * This exception vector will be the entry point for
 	 * HVCs and traps that are unhandled at lower ELs most
@@ -301,6 +344,8 @@ fiq_aarch32:
 
 	.align	7
 serror_aarch32:
+	mov     x22, #0xa89c
+	movk    x22, #0x0000, lsl #16
 	bl	report_unhandled_exception
 	check_vector_size serror_aarch32
 
@@ -348,8 +393,28 @@ hvc_handler64:
 	 * ------------                                      ---
 	 * -----------------------------------------------------
 	 */
+#define	HVC_PRINT_MG_MASK	0xffff
+#define	HVC_PRINT_MG_CODE	0xabcd
+	mrs	x0, esr_el2
+	mov	x1, #HVC_PRINT_MG_MASK
+	orr	x0, x0, x1
+	mov	x1, #HVC_PRINT_MG_CODE
+	cmp	x0, x1
+	b.eq	1f
+	bl	kernel_dbg_print
+1:
+
+#if 0
+	mov	x21, x1
+	mov	x22, x2
+	bl	dbg_print
+	mov	x0, x21
+	bl	dbg_print
+	mov	x0, x22
+	bl	dbg_print
 	mrs	x0, esr_el2
 	bl	handled_exception_print
+#endif
 
 	/* -----------------------------------------------------
 	 * This routine assumes that the SP_EL2 is pointing to
@@ -381,12 +446,15 @@ el2_exit: ; .type el2_exit, %function
 	msr	spsr_el2, x16
 	msr	elr_el2, x17
 
+#define	EL2_EXIT_DEBUG	0 /* Jason Debug */
+#if EL2_EXIT_DEBUG
 	mov	x0, x18
 	bl	dbg_print
 	mov	x0, x16
 	bl	dbg_print
 	mov	x0, x17
 	bl	dbg_print
+#endif /* EL2_EXIT_DEBUG */
 
 	/* Restore saved general purpose registers and return */
 	b	restore_gp_registers_eret

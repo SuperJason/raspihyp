@@ -5,6 +5,7 @@
 #include <platform_def.h>
 #include <string.h>
 #include <xlat_tables.h>
+#include <debug.h>
 
 
 #ifndef DEBUG_XLAT_TABLE
@@ -276,9 +277,11 @@ void init_xlat_tables(void)
 				ATTR_IWBWA_OWBWA_NTR_INDEX);		\
 		write_mair_el##_el(mair);				\
 									\
+		pr_debug("%s(): %d\n", __func__, __LINE__);		\
 		/* Invalidate TLBs at the current exception level */	\
 		_tlbi_fct();						\
 									\
+		pr_debug("%s(): %d\n", __func__, __LINE__);		\
 		/* Set TCR bits as well. */				\
 		/* Inner & outer WBWA & shareable + T0SZ = 32 */	\
 		tcr = TCR_SH_INNER_SHAREABLE | TCR_RGN_OUTER_WBA |	\
@@ -287,10 +290,12 @@ void init_xlat_tables(void)
 		tcr |= _tcr_extra;					\
 		write_tcr_el##_el(tcr);					\
 									\
+		pr_debug("%s(): %d\n", __func__, __LINE__);		\
 		/* Set TTBR bits as well */				\
 		ttbr = (uint64_t) l1_xlation_table;			\
 		write_ttbr0_el##_el(ttbr);				\
 									\
+		pr_debug("%s(): %d\n", __func__, __LINE__);		\
 		/* Ensure all translation table writes have drained */	\
 		/* into memory, the TLB invalidation is complete, */	\
 		/* and translation register writes are committed */	\
@@ -298,6 +303,7 @@ void init_xlat_tables(void)
 		dsb();							\
 		isb();							\
 									\
+		pr_debug("%s(): %d\n", __func__, __LINE__);		\
 		sctlr = read_sctlr_el##_el();				\
 		sctlr |= SCTLR_WXN_BIT | SCTLR_M_BIT;			\
 									\
@@ -306,16 +312,17 @@ void init_xlat_tables(void)
 		else							\
 			sctlr |= SCTLR_C_BIT;				\
 									\
+		pr_debug("%s(): %d\n", __func__, __LINE__);		\
 		write_sctlr_el##_el(sctlr);				\
 									\
 		/* Ensure the MMU enable takes effect immediately */	\
 		isb();							\
 	}
 
-/* Define EL1 and EL3 variants of the function enabling the MMU */
+/* Define EL1 and EL2 variants of the function enabling the MMU */
 DEFINE_ENABLE_MMU_EL(1,
 		(tcr_ps_bits << TCR_EL1_IPS_SHIFT),
 		tlbivmalle1)
 DEFINE_ENABLE_MMU_EL(2,
-		TCR_EL3_RES1 | (tcr_ps_bits << TCR_EL3_PS_SHIFT),
-		tlbialle3)
+		TCR_EL2_RES1 | (tcr_ps_bits << TCR_EL2_PS_SHIFT),
+		tlbialle2)

@@ -45,6 +45,7 @@ void hyp_init(void);
 void hyp_enable(void);
 
 entry_point_info_t entry_point_info;
+uint64_t one_run_el1;
 
 void hyp_main(void)
 {
@@ -71,7 +72,7 @@ void hyp_main(void)
 	ep->spsr = 0x3c5;
 	ep->pc = 0x00080000;
 
-#define DEBUG_BOOT_KERNEL 0
+#define DEBUG_BOOT_KERNEL 1
 #define DEBUG_BOOT_E1_HYP 1
 #if DEBUG_BOOT_KERNEL
 	ep->pc = 0x00080000;
@@ -119,9 +120,11 @@ void hyp_main(void)
 	reg_val = read_hcr();
 	pr_debug("hcr: (0x%x)%d\n", reg_val, reg_val);
 	reg_val |= HCR_RW_BIT;
+#if HYP_IRQ_HANDLE_ENABLE
 	reg_val |= HCR_AMO_BIT;
 	reg_val |= HCR_IMO_BIT;
 	reg_val |= HCR_FMO_BIT;
+#endif
 	write_hcr(reg_val);
 	reg_val = read_hcr();
 	pr_debug("hcr: (0x%x)%d\n", reg_val, reg_val);
@@ -158,7 +161,7 @@ void hyp_main(void)
 	reg_val = PRI3_MS * 1000 * 10; */
 	/* Generate a timer fiq/irq before eret
 	reg_val = PRI3_MS * 40; */
-	reg_val = PRI3_MS * 1000 * 5;
+	reg_val = PRI3_MS * 1000 * 7;
 	write_cnthp_tval_el2(reg_val);
 	reg_val = read_cnthp_cval_el2();
 	pr_debug("cnthp_cval_el2: (0x%x)%d, %d msec\n", reg_val, reg_val, reg_val / PRI3_MS);
@@ -174,8 +177,21 @@ void hyp_main(void)
 	reg_val = read_cnthp_ctl_el2();
 	pr_debug("cnthp_ctl_el2: (0x%x)%d\n", reg_val, reg_val);
 
+	/* EL1 physical timer */
+	reg_val = PRI3_MS * 1000 * 5;
+	write_cntp_tval_el0(reg_val);
+	reg_val = 1;
+	write_cntp_ctl_el0(reg_val);
+
+	/* EL1 virtual timer */
+	reg_val = PRI3_MS * 1000 * 3;
+	write_cntv_tval_el0(reg_val);
+	reg_val = 1;
+	write_cntv_ctl_el0(reg_val);
+
 	prepare_el2_exit();
 	pr_debug("Exit from %s()\n", __func__);
+	one_run_el1 = 1;
 }
 
 void cpu_test(void)
@@ -234,4 +250,90 @@ void hyp_init(void)
 
 void hyp_enable(void)
 {
+}
+
+uint64_t virq_cnt;
+uint64_t pirq_cnt;
+uint64_t hpirq_cnt;
+void irq_handler(unsigned long flag)
+{
+	uint64_t reg_val;
+	uint64_t elr_el1 = 0;
+	uint64_t spsr_el1 = 0;
+	int current_el;
+
+	spsr_el1 = spsr_el1;
+	elr_el1 = elr_el1;
+
+	current_el = read_CurrentEl();
+	current_el >>= 2;
+#if 0
+	pr_debug("HYP(%d): %s(): flag: 0x%x, hpirq_cnt: %d, pirq_cnt: %d, virq_cnt: %d\n",
+			current_el, __func__, flag, hpirq_cnt, pirq_cnt, virq_cnt);
+#endif
+	if ((flag & BCM_LP_INT_SRC_CNTHPIRQ) && (2 == current_el)) {
+		hpirq_cnt++;
+		pr_debug("HYP(%d): %s(): BCM_LP_INT_SRC_CNTHPIRQ: hpirq_cnt: %d\n", current_el, __func__, hpirq_cnt);
+		reg_val = PRI3_MS * 1000 * 7;
+		write_cnthp_tval_el2(reg_val);
+
+	}
+
+	if (flag & BCM_LP_INT_SRC_CNTVIRQ) {
+		virq_cnt++;
+		pr_debug("HYP(%d): %s(): BCM_LP_INT_SRC_CNTHPIRQ: virq_cnt: %d\n", current_el, __func__, virq_cnt);
+		reg_val = PRI3_MS * 1000 * 5;
+		write_cntv_tval_el0(reg_val);
+
+	}
+
+	if (flag & BCM_LP_INT_SRC_CNTPNSIRQ) {
+		pirq_cnt++;
+		pr_debug("HYP(%d): %s(): BCM_LP_INT_SRC_CNTPNSIRQ: pirq_cnt: %d\n", current_el, __func__, pirq_cnt);
+		reg_val = PRI3_MS * 1000 * 3;
+		write_cntp_tval_el0(reg_val);
+
+	}
+
+	reg_val = read_hcr();
+	reg_val &= ~HCR_VSE_BIT;
+	reg_val &= ~HCR_VI_BIT;
+	reg_val &= ~HCR_VF_BIT;
+	write_hcr(reg_val);
+
+	reg_val = read_spsr_el2();
+	spsr_el1 = reg_val;
+	reg_val |= 0xc0;
+	write_spsr_el2(reg_val);
+
+	reg_val = read_elr_el2();
+	elr_el1 = reg_val;
+
+	reg_val = read_vbar_el1();
+	reg_val += 0x480;
+	write_elr_el2(reg_val);
+
+	write_spsr_el1(spsr_el1);
+	write_elr_el1(elr_el1);
+
+	one_run_el1 = 1;
+}
+
+void el1_main(void)
+{
+	int current_el = read_CurrentEl();
+	current_el >>= 2;
+
+	if(one_run_el1) {
+		one_run_el1 = 0;
+		pr_debug("HYP(%d): %s(): one_run\n", current_el, __func__);
+	}
+}
+
+void kernel_dbg_print(unsigned long x0, unsigned long x1, unsigned long x2)
+{
+	int current_el = read_CurrentEl();
+	current_el >>= 2;
+
+	pr_debug("HYP(%d): %s(): x0: %x, x1: %x, x2: %x(%d)\n", current_el, __func__, x0, x1, x2, x2);
 }

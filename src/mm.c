@@ -24,7 +24,11 @@ void configure_mmu_el2(unsigned long ro_start, unsigned long ro_limit)
 	mmap_add(rpi3_mmap);
 	init_xlat_tables();
 
+	/*
+	 * pr_debug("%s(): %d\n", __func__, __LINE__);
 	enable_mmu_el2(0);
+	pr_debug("%s(): %d\n", __func__, __LINE__);
+	 */
 }
 
 extern unsigned long __RO_START__;

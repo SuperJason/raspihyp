@@ -142,12 +142,19 @@
 #define HCR_CD_BIT		(1ull << 32)
 #define HCR_RW_BIT		(1ull << 31)
 #define HCR_TRVM_BIT		(1ull << 30)
-#define HCR_HCD_BIT		(1ull << 29) /* RES0, EL3 is implemented */
+#define HCR_HCD_BIT		(1ull << 29) /* RES0, when EL3 is implemented */
 #define HCR_TDZ_BIT		(1ull << 28)
 #define HCR_TGE_BIT		(1ull << 27)
+#define HCR_FB_BIT		(1ull << 9)
+#define HCR_VSE_BIT		(1ull << 8)
+#define HCR_VI_BIT		(1ull << 7)
+#define HCR_VF_BIT		(1ull << 6)
 #define HCR_AMO_BIT		(1ull << 5)
 #define HCR_IMO_BIT		(1ull << 4)
 #define HCR_FMO_BIT		(1ull << 3)
+#define HCR_PTW_BIT		(1ull << 2)
+#define HCR_SWIO_BIT		(1ull << 1)
+#define HCR_VM_BIT		(1ull << 0)
 
 /* CNTHCTL_EL2 definitions */
 #define EVNTEN_BIT		(1 << 2)
@@ -197,9 +204,9 @@
 /*
  * TCR defintions
  */
-#define TCR_EL3_RES1		((1UL << 31) | (1UL << 23))
+#define TCR_EL2_RES1		((1UL << 31) | (1UL << 23))
 #define TCR_EL1_IPS_SHIFT	32
-#define TCR_EL3_PS_SHIFT	16
+#define TCR_EL2_PS_SHIFT	16
 
 /* (internal) physical address size bits in EL3/EL1 */
 #define TCR_PS_BITS_4GB		(0x0)

@@ -49,4 +49,6 @@ void vm_init(void);
 void vm_boot_prepare(void);
 void prepare_el2_exit(void);
 
+#define HYP_IRQ_HANDLE_ENABLE	1
+
 #endif /* __HYP_H__ */

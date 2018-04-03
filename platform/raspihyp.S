@@ -170,8 +170,36 @@ el2_check:
 
 	bl	el1_dbg_print
 
-	/* hvc	#0xbcda */
+	mrs	x0, spsel
+	bl	dbg_print
+
+	/* ---------------------------------------------
+	 * Set the exception vector.
+	 * ---------------------------------------------
+	 */
+	adr     x1, runtime_exceptions
+	msr     vbar_el1, x1
+	isb
+
+	/* Enable IRQ */
+	msr	daifclr, #DAIF_IRQ_BIT
+	/* Enable FIQ */
+	msr	daifclr, #DAIF_FIQ_BIT
+
+	/* Hypervisor command test
+	hvc	#0xbcda */
+
+	/* sp setup */
+	mov     x0, #0x0000
+	movk    x0, #0x0500, lsl #16
+	mov	sp, x0
+
+	mov     x0, #0x0000
+	movk    x0, #0x0510, lsl #16
+	msr	sp_el1, x0
+
 el1_spin:
+	bl	el1_main
 	b	el1_spin
 
 

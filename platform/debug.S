@@ -193,7 +193,7 @@ func dbg_print_sp
 	ret	x11
 
 el1_dbg_print_start:
-	.asciz "## Exception Level is EL1 ##"
+	.asciz "## Exception Level is EL1 ##\n"
 
 	.align 8
 func el1_dbg_print
