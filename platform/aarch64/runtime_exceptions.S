@@ -56,6 +56,20 @@
 	str	x30, [sp, #CTX_GPREGS_OFFSET + CTX_GPREG_LR]
 	bl	save_gp_registers
 
+	mrs     x0, CurrentEL
+	cmp     x0, #ID_AA64PFR0_EL2_SHIFT
+	b.eq	1f
+
+	/* el1 */
+	mov     x0, #0x0060
+	movk    x0, #0x4000, lsl #16
+	mov	x1, x0
+	ldr	x0, [x1]
+	bl	dbg_print
+
+	b	restore_gp_registers_eret
+1:
+	/* el2 */
 	/* Switch to the runtime stack i.e. SP_EL0 */
 	ldr	x2, [sp, #CTX_EL2STATE_OFFSET + CTX_RUNTIME_SP]
 	mov	x20, sp
@@ -395,12 +409,14 @@ hvc_handler64:
 	 */
 #define	HVC_PRINT_MG_MASK	0xffff
 #define	HVC_PRINT_MG_CODE	0xabcd
-	mrs	x0, esr_el2
-	mov	x1, #HVC_PRINT_MG_MASK
-	orr	x0, x0, x1
-	mov	x1, #HVC_PRINT_MG_CODE
-	cmp	x0, x1
-	b.eq	1f
+	mrs	x10, esr_el2
+	mov	x11, #HVC_PRINT_MG_MASK
+	and	x10, x10, x11
+	mov	x11, #HVC_PRINT_MG_CODE
+	cmp	x10, x11
+	b.ne	1f
+	/* So far x0, x1, x2 should be keep unchanged since they are
+	 * contains input value */
 	bl	kernel_dbg_print
 1:
 

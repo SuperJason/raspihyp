@@ -171,7 +171,7 @@ el2_check:
 	bl	el1_dbg_print
 
 	mrs	x0, spsel
-	bl	dbg_print
+	/* bl	dbg_print */
 
 	/* ---------------------------------------------
 	 * Set the exception vector.
@@ -191,12 +191,8 @@ el2_check:
 
 	/* sp setup */
 	mov     x0, #0x0000
-	movk    x0, #0x0500, lsl #16
+	movk    x0, #0x1000, lsl #16
 	mov	sp, x0
-
-	mov     x0, #0x0000
-	movk    x0, #0x0510, lsl #16
-	msr	sp_el1, x0
 
 el1_spin:
 	bl	el1_main

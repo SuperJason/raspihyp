@@ -72,7 +72,7 @@ void hyp_main(void)
 	ep->spsr = 0x3c5;
 	ep->pc = 0x00080000;
 
-#define DEBUG_BOOT_KERNEL 1
+#define DEBUG_BOOT_KERNEL 0
 #define DEBUG_BOOT_E1_HYP 1
 #if DEBUG_BOOT_KERNEL
 	ep->pc = 0x00080000;
@@ -261,6 +261,7 @@ void irq_handler(unsigned long flag)
 	uint64_t elr_el1 = 0;
 	uint64_t spsr_el1 = 0;
 	int current_el;
+	unsigned int *p = (unsigned int *)0x40000060;
 
 	spsr_el1 = spsr_el1;
 	elr_el1 = elr_el1;
@@ -273,7 +274,7 @@ void irq_handler(unsigned long flag)
 #endif
 	if ((flag & BCM_LP_INT_SRC_CNTHPIRQ) && (2 == current_el)) {
 		hpirq_cnt++;
-		pr_debug("HYP(%d): %s(): BCM_LP_INT_SRC_CNTHPIRQ: hpirq_cnt: %d\n", current_el, __func__, hpirq_cnt);
+		pr_debug("HYP(%d): %s(): BCM_LP_INT_SRC_CNTHPIRQ(%x): hpirq_cnt: %d\n", current_el, __func__, *p, hpirq_cnt);
 		reg_val = PRI3_MS * 1000 * 7;
 		write_cnthp_tval_el2(reg_val);
 
@@ -281,7 +282,7 @@ void irq_handler(unsigned long flag)
 
 	if (flag & BCM_LP_INT_SRC_CNTVIRQ) {
 		virq_cnt++;
-		pr_debug("HYP(%d): %s(): BCM_LP_INT_SRC_CNTHPIRQ: virq_cnt: %d\n", current_el, __func__, virq_cnt);
+		pr_debug("HYP(%d): %s(): BCM_LP_INT_SRC_CNTHPIRQ(%x): virq_cnt: %d\n", current_el, __func__, *p, virq_cnt);
 		reg_val = PRI3_MS * 1000 * 5;
 		write_cntv_tval_el0(reg_val);
 
@@ -289,7 +290,7 @@ void irq_handler(unsigned long flag)
 
 	if (flag & BCM_LP_INT_SRC_CNTPNSIRQ) {
 		pirq_cnt++;
-		pr_debug("HYP(%d): %s(): BCM_LP_INT_SRC_CNTPNSIRQ: pirq_cnt: %d\n", current_el, __func__, pirq_cnt);
+		pr_debug("HYP(%d): %s(): BCM_LP_INT_SRC_CNTPNSIRQ(%x): pirq_cnt: %d\n", current_el, __func__, *p, pirq_cnt);
 		reg_val = PRI3_MS * 1000 * 3;
 		write_cntp_tval_el0(reg_val);
 
@@ -330,10 +331,7 @@ void el1_main(void)
 	}
 }
 
-void kernel_dbg_print(unsigned long x0, unsigned long x1, unsigned long x2)
+void kernel_dbg_print(uint64_t x0, uint64_t x1, uint64_t x2)
 {
-	int current_el = read_CurrentEl();
-	current_el >>= 2;
-
-	pr_debug("HYP(%d): %s(): x0: %x, x1: %x, x2: %x(%d)\n", current_el, __func__, x0, x1, x2, x2);
+	hyp_printf("KPRT:\t0: 0x%lx, 1: 0x%lx, 2: 0x%lx(%ld)\n", x0, x1, x2, x2);
 }
